@@ -1,0 +1,17 @@
+{
+    "files": {
+        "example.txt": {
+            "hash": "7d10d8077c5f2c0f2d22a12a63886d16b7bd831df56f453ccb134916cc987036",
+            "url": "http://localhost:8080/patch-folder/example.txt"
+        },
+        "app": {
+            "hash": "6a959a96f40140daaaf1fed34ba95870547a32adcc0ff4b1cf61534ac5f10abc",
+            "url": "http://localhost:8080/patch-folder/app"
+        },
+        "example.py": {
+            "hash": "fcfd3aa30497c4cf5c2b715e7b260f5e2d7b2a6dfe9f7f780bf2d87cc85495b0",
+            "url": "http://localhost:8080/patch-folder/example.py"
+        }
+    },
+    "version": "1.0.0"
+}

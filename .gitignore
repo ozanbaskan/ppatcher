@@ -1,0 +1,14 @@
+dist/
+build/
+
+*.spec
+
+__pycache__/
+*.pyc
+
+
+*_env/
+
+# Ignore other system-specific files
+.DS_Store  # macOS
+Thumbs.db  # Windows

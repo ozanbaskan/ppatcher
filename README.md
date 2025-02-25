@@ -18,4 +18,4 @@ cd dist
 ./patcher
 ```
 
-If you need something simple, to use it as it is, run the manifest.py from your server side and serve the files including the manifest (the directories are specified in the config.py), then you can build the client side or use it, simply add the builded executable to your files' root directory.
+If you need something simple, to use it as it is, run the manifest.py from your server side and serve the files including the manifest (the directories are specified in the config.py), then you can build the client side and use it, simply add the built executable to your files' (your client side application or any other files that you want keep updated) root directory.

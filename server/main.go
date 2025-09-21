@@ -31,13 +31,13 @@ type MetaForFile struct {
 }
 
 const (
-	filesDir      = "./files"
 	metaFile      = "meta.json"
 	filesmetaFile = "filesmeta.json"
 	port          = ":3000"
 )
 
 var (
+	filesDir       = "./files"
 	metaCache      []byte
 	filesMetaCache []byte
 	cacheMutex     sync.RWMutex
@@ -49,6 +49,11 @@ var (
 )
 
 func main() {
+	filesDirEnv, exists := os.LookupEnv("FILES_DIR")
+	if exists && filesDirEnv != "" {
+		filesDir = filesDirEnv
+	}
+
 	// Create files directory if it doesn't exist
 	if err := os.MkdirAll(filesDir, 0755); err != nil {
 		log.Fatalf("Failed to create files directory: %v", err)

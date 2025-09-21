@@ -13,8 +13,6 @@ CLEAN=false
 DEBUG=false
 HELP=false
 CREATE_CONFIG=""
-LOGO_IMAGE=""
-APP_ICON=""
 
 # Colors for output
 RED='\033[0;31m'
@@ -53,9 +51,7 @@ show_help() {
     echo "  -d, --debug             Build in debug mode"
     echo "  -h, --help              Show this help message"
     echo "  --create-config FILE    Create a sample config file"
-    echo "  --targets               Show available build targets
-  --logo FILE|URL         Path or URL to logo image for the client UI
-  --icon FILE|URL         Path or URL to app icon for the executable"
+    echo "  --targets               Show available build targets"
     echo ""
     echo "Available platforms:"
     echo "  windows/amd64, windows/arm64, linux/amd64, linux/arm64, darwin/amd64, darwin/arm64"
@@ -64,8 +60,6 @@ show_help() {
     echo "  $0 --config=my-config.json"
     echo "  $0 --platforms=windows/amd64,linux/amd64 --clean"
     echo "  $0 --create-config=my-config.json"
-    echo "  $0 --config=my-config.json --logo=logo.png --icon=icon.ico"
-    echo "  $0 --logo=https://example.com/logo.png --icon=https://example.com/icon.ico"
     echo "  $0 --targets"
 }
 
@@ -136,10 +130,21 @@ process_images() {
     local logo_processed=false
     local icon_processed=false
     
+    # Read logo and icon from config if available
+    local logo_image=""
+    local icon_image=""
+    
+    if [[ -f "$CONFIG_FILE" ]]; then
+        if command -v jq &> /dev/null; then
+            logo_image=$(jq -r '.logo // empty' "$CONFIG_FILE")
+            icon_image=$(jq -r '.icon // empty' "$CONFIG_FILE")
+        fi
+    fi
+    
     # Process logo image
-    if [[ -n "$LOGO_IMAGE" ]]; then
+    if [[ -n "$logo_image" && "$logo_image" != "null" ]]; then
         mkdir -p frontend/src/assets/images
-        if download_or_copy_file "$LOGO_IMAGE" "frontend/src/assets/images/logo-custom.png" "Logo image"; then
+        if download_or_copy_file "$logo_image" "frontend/src/assets/images/logo-custom.png" "Logo image"; then
             # Update the App.tsx to use the custom logo
             if [[ -f "frontend/src/App.tsx" ]]; then
                 sed -i 's|logo from "./assets/images/logo.jpeg"|logo from "./assets/images/logo-custom.png"|g' frontend/src/App.tsx
@@ -150,9 +155,9 @@ process_images() {
     fi
     
     # Process app icon
-    if [[ -n "$APP_ICON" ]]; then
+    if [[ -n "$icon_image" && "$icon_image" != "null" ]]; then
         mkdir -p build
-        if download_or_copy_file "$APP_ICON" "build/appicon.png" "App icon"; then
+        if download_or_copy_file "$icon_image" "build/appicon.png" "App icon"; then
             print_success "App icon updated for build process"
             icon_processed=true
         fi
@@ -161,7 +166,7 @@ process_images() {
     if [[ "$logo_processed" == "true" || "$icon_processed" == "true" ]]; then
         print_info "Images processed successfully"
         return 0
-    elif [[ -n "$LOGO_IMAGE" || -n "$APP_ICON" ]]; then
+    elif [[ -n "$logo_image" || -n "$icon_image" ]]; then
         print_warning "Some images failed to process, continuing with build..."
         return 0
     fi
@@ -183,7 +188,9 @@ create_sample_config() {
   "mode": "production",
   "outputName": "ppatcher",
   "version": "1.0.0",
-  "description": "PPatcher Client"
+  "description": "PPatcher Client",
+  "logo": "",
+  "icon": ""
 }
 EOF
     
@@ -194,6 +201,8 @@ EOF
     print_info "  - colorPalette: UI color theme (green, blue, red, etc.)"
     print_info "  - mode: Build mode (production or dev)"
     print_info "  - outputName: Name of the output executable"
+    print_info "  - logo: Path or URL to logo image for the client UI (optional)"
+    print_info "  - icon: Path or URL to app icon for the executable (optional)"
 }
 
 # Function to check prerequisites
@@ -402,22 +411,6 @@ while [[ $# -gt 0 ]]; do
             ;;
         --create-config=*)
             CREATE_CONFIG="${1#*=}"
-            shift
-            ;;
-        --logo)
-            LOGO_IMAGE="$2"
-            shift 2
-            ;;
-        --logo=*)
-            LOGO_IMAGE="${1#*=}"
-            shift
-            ;;
-        --icon)
-            APP_ICON="$2"
-            shift 2
-            ;;
-        --icon=*)
-            APP_ICON="${1#*=}"
             shift
             ;;
         --targets)

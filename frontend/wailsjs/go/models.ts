@@ -7,6 +7,8 @@ export namespace main {
 	    mode: string;
 	    version: string;
 	    description: string;
+	    logo: string;
+	    icon: string;
 	
 	    static createFrom(source: any = {}) {
 	        return new Config(source);
@@ -20,6 +22,8 @@ export namespace main {
 	        this.mode = source["mode"];
 	        this.version = source["version"];
 	        this.description = source["description"];
+	        this.logo = source["logo"];
+	        this.icon = source["icon"];
 	    }
 	}
 

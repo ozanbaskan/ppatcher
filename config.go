@@ -45,6 +45,8 @@ type Config struct {
 	Mode         string `json:"mode"`
 	Version      string `json:"version"`
 	Description  string `json:"description"`
+	Logo         string `json:"logo"`
+	Icon         string `json:"icon"`
 }
 
 func MarshalConfig(data []byte) *Config {

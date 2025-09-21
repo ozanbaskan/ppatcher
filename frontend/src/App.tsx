@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import logo from "./assets/images/logo.jpeg";
+import logo from "./assets/images/logo-custom.png";
 import { EventsOn, EventsOff, EventsEmit } from "../wailsjs/runtime/runtime";
 import { ManualUpdate, Config, StartExecutable } from "../wailsjs/go/main/App";
 
@@ -141,6 +141,8 @@ function App() {
   const [config, setConfig] = useState({
     colorPalette: "neutral",
     showStartButton: false,
+    version: "",
+    description: "",
   });
   const [progress, setProgress] = useState(() => 0);
   const [downloadState, setDownloadState] = useState<DownloadStatus>("idle");
@@ -166,6 +168,8 @@ function App() {
         setConfig({
           colorPalette: config.colorPalette,
           showStartButton: !!config.executable,
+          version: config.version || "",
+          description: config.description || "",
         });
       })
       .catch(() => {});
@@ -259,7 +263,7 @@ function App() {
       <div style={styles.content}>
         <div style={styles.header}>
           <h1 style={{ ...styles.title, color: colors.textPrimary }}>
-            PPatcher
+            {config.description || "PPatcher"}
           </h1>
           <p style={{ ...styles.subtitle, color: colors.textSecondary }}>
             Keep your files up to date
@@ -392,7 +396,7 @@ function App() {
 
       <div style={styles.footer}>
         <p style={{ ...styles.footerText, color: colors.textSecondary }}>
-          PPatcher v1.0.0
+          {config.description ? `${config.description} ${config.version || "v1.0.0"}` : "PPatcher v1.0.0"}
         </p>
       </div>
     </div>

@@ -13,6 +13,8 @@ CLEAN=false
 DEBUG=false
 HELP=false
 CREATE_CONFIG=""
+LOGO_IMAGE=""
+APP_ICON=""
 
 # Colors for output
 RED='\033[0;31m'
@@ -51,7 +53,9 @@ show_help() {
     echo "  -d, --debug             Build in debug mode"
     echo "  -h, --help              Show this help message"
     echo "  --create-config FILE    Create a sample config file"
-    echo "  --targets               Show available build targets"
+    echo "  --targets               Show available build targets
+  --logo FILE|URL         Path or URL to logo image for the client UI
+  --icon FILE|URL         Path or URL to app icon for the executable"
     echo ""
     echo "Available platforms:"
     echo "  windows/amd64, windows/arm64, linux/amd64, linux/arm64, darwin/amd64, darwin/arm64"
@@ -60,6 +64,8 @@ show_help() {
     echo "  $0 --config=my-config.json"
     echo "  $0 --platforms=windows/amd64,linux/amd64 --clean"
     echo "  $0 --create-config=my-config.json"
+    echo "  $0 --config=my-config.json --logo=logo.png --icon=icon.ico"
+    echo "  $0 --logo=https://example.com/logo.png --icon=https://example.com/icon.ico"
     echo "  $0 --targets"
 }
 
@@ -74,7 +80,92 @@ show_targets() {
     echo "  darwin/arm64"
 }
 
-# Function to create sample config
+# Function to download or copy file
+download_or_copy_file() {
+    local source="$1"
+    local destination="$2"
+    local description="$3"
+    
+    if [[ -z "$source" ]]; then
+        return 0
+    fi
+    
+    print_info "Processing $description: $source"
+    
+    if [[ "$source" =~ ^https?:// ]]; then
+        # It's a URL, download it
+        if command -v curl &> /dev/null; then
+            if curl -L -o "$destination" "$source"; then
+                print_success "$description downloaded successfully"
+                return 0
+            else
+                print_error "Failed to download $description from $source"
+                return 1
+            fi
+        elif command -v wget &> /dev/null; then
+            if wget -O "$destination" "$source"; then
+                print_success "$description downloaded successfully"
+                return 0
+            else
+                print_error "Failed to download $description from $source"
+                return 1
+            fi
+        else
+            print_error "Neither curl nor wget available for downloading $description"
+            return 1
+        fi
+    else
+        # It's a local file, copy it
+        if [[ -f "$source" ]]; then
+            if cp "$source" "$destination"; then
+                print_success "$description copied successfully"
+                return 0
+            else
+                print_error "Failed to copy $description from $source"
+                return 1
+            fi
+        else
+            print_error "$description file not found: $source"
+            return 1
+        fi
+    fi
+}
+
+# Function to process images
+process_images() {
+    local logo_processed=false
+    local icon_processed=false
+    
+    # Process logo image
+    if [[ -n "$LOGO_IMAGE" ]]; then
+        mkdir -p frontend/src/assets/images
+        if download_or_copy_file "$LOGO_IMAGE" "frontend/src/assets/images/logo-custom.png" "Logo image"; then
+            # Update the App.tsx to use the custom logo
+            if [[ -f "frontend/src/App.tsx" ]]; then
+                sed -i 's|logo from "./assets/images/logo.jpeg"|logo from "./assets/images/logo-custom.png"|g' frontend/src/App.tsx
+                print_success "Updated App.tsx to use custom logo"
+                logo_processed=true
+            fi
+        fi
+    fi
+    
+    # Process app icon
+    if [[ -n "$APP_ICON" ]]; then
+        mkdir -p build
+        if download_or_copy_file "$APP_ICON" "build/appicon.png" "App icon"; then
+            print_success "App icon updated for build process"
+            icon_processed=true
+        fi
+    fi
+    
+    if [[ "$logo_processed" == "true" || "$icon_processed" == "true" ]]; then
+        print_info "Images processed successfully"
+        return 0
+    elif [[ -n "$LOGO_IMAGE" || -n "$APP_ICON" ]]; then
+        print_warning "Some images failed to process, continuing with build..."
+        return 0
+    fi
+}
 create_sample_config() {
     local config_file="$1"
     local config_dir=$(dirname "$config_file")
@@ -313,6 +404,22 @@ while [[ $# -gt 0 ]]; do
             CREATE_CONFIG="${1#*=}"
             shift
             ;;
+        --logo)
+            LOGO_IMAGE="$2"
+            shift 2
+            ;;
+        --logo=*)
+            LOGO_IMAGE="${1#*=}"
+            shift
+            ;;
+        --icon)
+            APP_ICON="$2"
+            shift 2
+            ;;
+        --icon=*)
+            APP_ICON="${1#*=}"
+            shift
+            ;;
         --targets)
             show_targets
             exit 0
@@ -359,6 +466,9 @@ setup_environment
 
 # Set up build configuration from the specified config file
 setup_build_config "$CONFIG_FILE"
+
+# Process custom images if provided
+process_images
 
 # Build for each platform
 successful_builds=0

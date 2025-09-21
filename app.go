@@ -34,13 +34,13 @@ func NewApp() *App {
 func (a *App) startup(ctx context.Context) {
 	a.ctx = ctx
 
-	InitConfig()
-
 	if BuildConfig.Mode != "dev" {
 		exeDir, err := os.Executable()
 		if err != nil {
 			log.Fatal("Could not get executable path: ", err)
 		}
+
+		exeDir = filepath.Dir(exeDir)
 
 		err = os.Chdir(exeDir)
 		if err != nil {
@@ -64,12 +64,16 @@ func (a *App) tryUpdating() (err error) {
 
 	if err != nil {
 		a.UpdateDownloadStatus("error")
-		log.Println("Error checking for updates:", err)
+		if BuildConfig.Mode != "production" {
+			log.Println("Error checking for updates:", err)
+		}
 		return err
 	}
 	if ShouldUpdate {
 		a.UpdateDownloadStatus("downloading")
-		log.Println("We should update the files")
+		if BuildConfig.Mode != "production" {
+			log.Println("We should update the files")
+		}
 		return a.Update()
 	}
 
@@ -219,7 +223,9 @@ func generateMetaFile() error {
 		return err
 	}
 
-	log.Printf("Local meta file updated successfully. Total size: %d, Hash: %s", totalSize, overallHash)
+	if BuildConfig.Mode != "production" {
+		log.Printf("Local meta file updated successfully. Total size: %d, Hash: %s", totalSize, overallHash)
+	}
 	return nil
 }
 
@@ -252,12 +258,16 @@ func calculateFileHash(filePath string) (string, int64, error) {
 	return hex.EncodeToString(hash.Sum(nil)), totalSize, nil
 }
 func (a *App) UpdateDownloadStatus(status string) {
-	log.Println("Download status:", status)
+	if BuildConfig.Mode != "production" {
+		log.Println("Download status:", status)
+	}
 	runtime.EventsEmit(a.ctx, "downloadStatus", status)
 }
 
 func (a *App) UpdateDownloadProgress(progress float64) {
-	log.Println("Download progress:", progress)
+	if BuildConfig.Mode != "production" {
+		log.Println("Download progress:", progress)
+	}
 	runtime.EventsEmit(a.ctx, "downloadProgress", progress)
 }
 
@@ -270,34 +280,48 @@ func (a *App) UpdateCurrentFileData(path string, size int64) {
 
 func (a *App) ShouldUpdate() (should bool, err error) {
 	backend := BuildConfig.Backend
-	log.Println("Checking for updates from backend:", backend)
+	if BuildConfig.Mode != "production" {
+		log.Println("Checking for updates from backend:", backend)
+	}
 	resp, err := http.Get(backend + "/meta")
 
 	if err != nil {
-		log.Println("Error checking for updates:", err)
+		if BuildConfig.Mode != "production" {
+			log.Println("Error checking for updates:", err)
+		}
 		return false, err
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		log.Println("Error checking for updates: status code", resp.StatusCode)
+		if BuildConfig.Mode != "production" {
+			log.Println("Error checking for updates: status code", resp.StatusCode)
+		}
 		return false, fmt.Errorf("status code %d", resp.StatusCode)
 	}
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		log.Println("Error reading response body:", err)
+		if BuildConfig.Mode != "production" {
+			log.Println("Error reading response body:", err)
+		}
 		return false, err
 	}
 
 	json.Unmarshal(body, &a.meta)
 
-	log.Println("File hash:", a.meta.Hash)
-	log.Println("File total size:", a.meta.TotalSize)
+	if BuildConfig.Mode != "production" {
+		log.Println("File hash:", a.meta.Hash)
+	}
+	if BuildConfig.Mode != "production" {
+		log.Println("File total size:", a.meta.TotalSize)
+	}
 
 	data, err := os.ReadFile(".downloadmeta")
 	if err != nil {
-		log.Println("No local meta file found, need to download the files")
+		if BuildConfig.Mode != "production" {
+			log.Println("No local meta file found, need to download the files")
+		}
 		return true, nil
 	}
 
@@ -305,19 +329,27 @@ func (a *App) ShouldUpdate() (should bool, err error) {
 	json.Unmarshal(data, &localMeta)
 
 	if localMeta.Hash != a.meta.Hash || localMeta.TotalSize != a.meta.TotalSize {
-		log.Println(localMeta.Hash, a.meta.Hash)
-		log.Println("Local meta does not match remote meta, need to download the files")
+		if BuildConfig.Mode != "production" {
+			log.Println(localMeta.Hash, a.meta.Hash)
+		}
+		if BuildConfig.Mode != "production" {
+			log.Println("Local meta does not match remote meta, need to download the files")
+		}
 		return true, nil
 	}
 
-	log.Println("Local meta matches remote meta, no need to download the files")
+	if BuildConfig.Mode != "production" {
+		log.Println("Local meta matches remote meta, no need to download the files")
+	}
 	return false, nil
 }
 
 func (a *App) ManualUpdate() (err error) {
 	err = generateMetaFile()
 	if err != nil {
-		log.Println("Error generating local meta file", err)
+		if BuildConfig.Mode != "production" {
+			log.Println("Error generating local meta file", err)
+		}
 		return err
 	}
 
@@ -328,19 +360,25 @@ func FetchFilesMeta() (filesMeta *MetaDataForFiles, err error) {
 	backend := BuildConfig.Backend
 	resp, err := http.Get(backend + "/filesmeta")
 	if err != nil {
-		log.Println("Error fetching files meta:", err)
+		if BuildConfig.Mode != "production" {
+			log.Println("Error fetching files meta:", err)
+		}
 		return nil, err
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		log.Println("Error fetching files meta: status code", resp.StatusCode)
+		if BuildConfig.Mode != "production" {
+			log.Println("Error fetching files meta: status code", resp.StatusCode)
+		}
 		return nil, fmt.Errorf("status code %d", resp.StatusCode)
 	}
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		log.Println("Error reading response body:", err)
+		if BuildConfig.Mode != "production" {
+			log.Println("Error reading response body:", err)
+		}
 		return nil, err
 	}
 
@@ -351,7 +389,9 @@ func FetchFilesMeta() (filesMeta *MetaDataForFiles, err error) {
 
 func (a *App) Update() (err error) {
 	backend := BuildConfig.Backend
-	log.Println("Starting update from backend:", backend)
+	if BuildConfig.Mode != "production" {
+		log.Println("Starting update from backend:", backend)
+	}
 	filesMeta, err := FetchFilesMeta()
 	if err != nil {
 		return err
@@ -397,18 +437,24 @@ func (a *App) Update() (err error) {
 			hash, _, err := calculateFileHash(file.Path)
 
 			if err != nil {
-				log.Println("Error calculating the hash for the file", file.Path)
+				if BuildConfig.Mode != "production" {
+					log.Println("Error calculating the hash for the file", file.Path)
+				}
 				hash = ""
 			}
 
 			if hash == file.Hash {
-				log.Println("File is up to date, skipping", file.Path)
+				if BuildConfig.Mode != "production" {
+					log.Println("File is up to date, skipping", file.Path)
+				}
 				return
 			}
 
 			err = a.downloadFile(backend, file.Path)
 			if err != nil {
-				log.Println("Error downloading file:", file.Path, err)
+				if BuildConfig.Mode != "production" {
+					log.Println("Error downloading file:", file.Path, err)
+				}
 			}
 		}()
 	}
@@ -416,25 +462,33 @@ func (a *App) Update() (err error) {
 	// Save the new meta file
 	respMeta, err := http.Get(backend + "/meta")
 	if err != nil {
-		log.Println("Error fetching meta:", err)
+		if BuildConfig.Mode != "production" {
+			log.Println("Error fetching meta:", err)
+		}
 		return err
 	}
 	defer respMeta.Body.Close()
 
 	if respMeta.StatusCode != http.StatusOK {
-		log.Println("Error fetching meta: status code", respMeta.StatusCode)
+		if BuildConfig.Mode != "production" {
+			log.Println("Error fetching meta: status code", respMeta.StatusCode)
+		}
 		return fmt.Errorf("status code %d", respMeta.StatusCode)
 	}
 
 	metaBody, err := io.ReadAll(respMeta.Body)
 	if err != nil {
-		log.Println("Error reading meta response body:", err)
+		if BuildConfig.Mode != "production" {
+			log.Println("Error reading meta response body:", err)
+		}
 		return err
 	}
 
 	err = os.WriteFile(".downloadmeta", metaBody, 0644)
 	if err != nil {
-		log.Println("Error writing local meta file:", err)
+		if BuildConfig.Mode != "production" {
+			log.Println("Error writing local meta file:", err)
+		}
 		return err
 	}
 
@@ -448,14 +502,18 @@ func (a *App) StartExecutable() {
 	executablePath := strings.TrimSpace(BuildConfig.Executable)
 
 	if executablePath == "" {
-		log.Println("executable path is empty")
+		if BuildConfig.Mode != "production" {
+			log.Println("executable path is empty")
+		}
 		return
 	}
 
 	if !filepath.IsAbs(executablePath) {
 		absPath, err := filepath.Abs(executablePath)
 		if err != nil {
-			log.Printf("failed to get absolute path: %v", err)
+			if BuildConfig.Mode != "production" {
+				log.Printf("failed to get absolute path: %v", err)
+			}
 			return
 		}
 		executablePath = absPath
@@ -463,16 +521,22 @@ func (a *App) StartExecutable() {
 
 	// Check if executable exists
 	if _, err := os.Stat(executablePath); os.IsNotExist(err) {
-		log.Printf("executable not found: %s", executablePath)
+		if BuildConfig.Mode != "production" {
+			log.Printf("executable not found: %s", executablePath)
+		}
 		return
 	}
 
-	log.Printf("Starting executable %s\n", executablePath)
+	if BuildConfig.Mode != "production" {
+		log.Printf("Starting executable %s\n", executablePath)
+	}
 
 	// Start the executable using the absolute path
 	cmd := exec.Command(executablePath)
 	if err := cmd.Start(); err != nil {
-		log.Printf("failed to start executable: %v", err)
+		if BuildConfig.Mode != "production" {
+			log.Printf("failed to start executable: %v", err)
+		}
 		return
 	}
 
@@ -480,24 +544,34 @@ func (a *App) StartExecutable() {
 	go func() {
 		err := cmd.Wait()
 		if err != nil {
-			log.Printf("Executable finished with error: %v", err)
+			if BuildConfig.Mode != "production" {
+				log.Printf("Executable finished with error: %v", err)
+			}
 		}
-		log.Printf("Executable finished successfully")
+		if BuildConfig.Mode != "production" {
+			log.Printf("Executable finished successfully")
+		}
 	}()
 }
 
 func (a *App) downloadFile(backend string, path string) error {
-	log.Println("Downloading file:", path)
+	if BuildConfig.Mode != "production" {
+		log.Println("Downloading file:", path)
+	}
 
 	resp, err := http.Get(backend + "/files/" + path)
 	if err != nil {
-		log.Println("Error downloading file:", path, err)
+		if BuildConfig.Mode != "production" {
+			log.Println("Error downloading file:", path, err)
+		}
 		return err
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		log.Println("Error downloading file: status code", resp.StatusCode)
+		if BuildConfig.Mode != "production" {
+			log.Println("Error downloading file: status code", resp.StatusCode)
+		}
 		return fmt.Errorf("status code %d", resp.StatusCode)
 	}
 
@@ -505,14 +579,18 @@ func (a *App) downloadFile(backend string, path string) error {
 	if strings.Contains(path, "/") {
 		err = os.MkdirAll(getDir(path), os.ModePerm)
 		if err != nil {
-			log.Println("Error creating directories for file:", path, err)
+			if BuildConfig.Mode != "production" {
+				log.Println("Error creating directories for file:", path, err)
+			}
 			return err
 		}
 	}
 
 	out, err := os.Create(path)
 	if err != nil {
-		log.Println("Error creating file:", path, err)
+		if BuildConfig.Mode != "production" {
+			log.Println("Error creating file:", path, err)
+		}
 		return err
 	}
 	defer out.Close()
@@ -522,16 +600,22 @@ func (a *App) downloadFile(backend string, path string) error {
 		if err == nil {
 			err = out.Chmod(info.Mode() | 0111)
 			if err != nil {
-				log.Printf("Error giving exec permission to file %s", path)
+				if BuildConfig.Mode != "production" {
+					log.Printf("Error giving exec permission to file %s", path)
+				}
 			}
 		} else {
-			log.Printf("Error reading permission of file %s", path)
+			if BuildConfig.Mode != "production" {
+				log.Printf("Error reading permission of file %s", path)
+			}
 		}
 	}
 
 	_, err = io.Copy(out, resp.Body)
 	if err != nil {
-		log.Println("Error writing file:", path, err)
+		if BuildConfig.Mode != "production" {
+			log.Println("Error writing file:", path, err)
+		}
 		return err
 	}
 
@@ -539,7 +623,9 @@ func (a *App) downloadFile(backend string, path string) error {
 }
 
 func (a *App) BackendLog(s string) {
-	log.Println("frontend log:", s)
+	if BuildConfig.Mode != "production" {
+		log.Println("frontend log:", s)
+	}
 }
 
 // getDir returns the directory part of a file path

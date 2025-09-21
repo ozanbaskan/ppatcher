@@ -5,6 +5,12 @@ export namespace main {
 	    executable: string;
 	    colorPalette: string;
 	    mode: string;
+	    version: string;
+	    description: string;
+	    title: string;
+	    displayName: string;
+	    logo: string;
+	    icon: string;
 	
 	    static createFrom(source: any = {}) {
 	        return new Config(source);
@@ -16,6 +22,12 @@ export namespace main {
 	        this.executable = source["executable"];
 	        this.colorPalette = source["colorPalette"];
 	        this.mode = source["mode"];
+	        this.version = source["version"];
+	        this.description = source["description"];
+	        this.title = source["title"];
+	        this.displayName = source["displayName"];
+	        this.logo = source["logo"];
+	        this.icon = source["icon"];
 	    }
 	}
 

@@ -1,0 +1,13 @@
+{
+  "backend": "https://patches.mygame.com",
+  "executable": "game",
+  "colorPalette": "blue",
+  "mode": "production",
+  "outputName": "mygame-patcher",
+  "version": "1.0.1",
+  "description": "Keep your files up to date",
+  "logo": "assets/logo.png",
+  "icon": "assets/icon.ico",
+  "title": "My Game",
+  "displayName": "Game Patcher"
+}

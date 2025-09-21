@@ -40,6 +40,8 @@ func (a *App) startup(ctx context.Context) {
 			log.Fatal("Could not get executable path: ", err)
 		}
 
+		exeDir = filepath.Dir(exeDir)
+
 		err = os.Chdir(exeDir)
 		if err != nil {
 			log.Fatal("Could not change working directory: ", err)

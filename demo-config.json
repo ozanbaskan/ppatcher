@@ -5,5 +5,7 @@
   "mode": "production",
   "outputName": "mygame-patcher",
   "version": "2.0.1",
-  "description": "My Game Patcher"
+  "description": "My Game Patcher",
+  "logo": "assets/logo.png",
+  "icon": "assets/icon.ico"
 }

@@ -22,19 +22,15 @@ import (
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 )
 
-// App struct
 type App struct {
 	ctx  context.Context
 	meta MetaData
 }
 
-// NewApp creates a new App application struct
 func NewApp() *App {
 	return &App{}
 }
 
-// startup is called when the app starts. The context is saved
-// so we can call the runtime methods
 func (a *App) startup(ctx context.Context) {
 	a.ctx = ctx
 
@@ -199,31 +195,26 @@ func calculateOverallHash(filesMeta []MetaForFile) (string, error) {
 }
 
 func generateMetaFile() error {
-	// Calculate file metadata
 	filesMeta, totalSize, err := calculateFilesMeta()
 	if err != nil {
 		return err
 	}
 
-	// Calculate overall hash
 	overallHash, err := calculateOverallHash(filesMeta)
 	if err != nil {
 		return err
 	}
 
-	// Create meta data
 	meta := MetaData{
 		Hash:      overallHash,
 		TotalSize: totalSize,
 	}
 
-	// Marshal to JSON
 	metaJSON, err := json.Marshal(meta)
 	if err != nil {
 		return err
 	}
 
-	// Write to files
 	if err := os.WriteFile(".downloadmeta", metaJSON, 0644); err != nil {
 		return err
 	}

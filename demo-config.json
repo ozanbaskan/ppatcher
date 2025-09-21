@@ -1,0 +1,9 @@
+{
+  "backend": "https://patches.mygame.com",
+  "executable": "game/mygame.exe",
+  "colorPalette": "blue",
+  "mode": "production",
+  "outputName": "mygame-patcher",
+  "version": "2.0.1",
+  "description": "My Game Patcher"
+}

@@ -3,6 +3,7 @@ package main
 import (
 	"embed"
 	"encoding/json"
+	"os"
 )
 
 //go:embed config.json
@@ -16,12 +17,26 @@ func InitConfig() {
 		panic(err)
 	}
 	BuildConfig = MarshalConfig(data)
+
+	if envBackend := os.Getenv("BACKEND"); envBackend != "" {
+		BuildConfig.Backend = envBackend
+	}
+	if envExecutable := os.Getenv("EXECUTABLE"); envExecutable != "" {
+		BuildConfig.Executable = envExecutable
+	}
+	if envColorPalette := os.Getenv("COLOR_PALETTE"); envColorPalette != "" {
+		BuildConfig.ColorPalette = envColorPalette
+	}
+	if envMode := os.Getenv("MODE"); envMode != "" {
+		BuildConfig.Mode = envMode
+	}
 }
 
 type Config struct {
 	Backend      string `json:"backend"`
 	Executable   string `json:"executable"`
 	ColorPalette string `json:"colorPalette"`
+	Mode         string `json:"mode"`
 }
 
 func MarshalConfig(data []byte) *Config {

@@ -1,5 +1,6 @@
 {
   "backend": "http://localhost:3000",
   "executable": "testprogram",
-  "colorPalette": "green"
+  "colorPalette": "green",
+  "mode": "dev"
 }

@@ -4,6 +4,7 @@ export namespace main {
 	    backend: string;
 	    executable: string;
 	    colorPalette: string;
+	    mode: string;
 	
 	    static createFrom(source: any = {}) {
 	        return new Config(source);
@@ -14,6 +15,7 @@ export namespace main {
 	        this.backend = source["backend"];
 	        this.executable = source["executable"];
 	        this.colorPalette = source["colorPalette"];
+	        this.mode = source["mode"];
 	    }
 	}
 

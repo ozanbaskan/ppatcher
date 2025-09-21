@@ -253,7 +253,7 @@ function App() {
       style={{
         ...styles.app,
         background: colors.background,
-        height: `${windowHeight}px`,
+        height: "100vh",
       }}
     >
       <div style={styles.content}>

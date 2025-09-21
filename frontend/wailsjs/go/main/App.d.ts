@@ -6,8 +6,6 @@ export function BackendLog(arg1:string):Promise<void>;
 
 export function Config():Promise<main.Config>;
 
-export function Greet(arg1:string):Promise<string>;
-
 export function ManualUpdate():Promise<void>;
 
 export function ShouldUpdate():Promise<boolean>;

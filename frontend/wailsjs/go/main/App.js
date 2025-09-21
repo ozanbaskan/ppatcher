@@ -10,10 +10,6 @@ export function Config() {
   return window['go']['main']['App']['Config']();
 }
 
-export function Greet(arg1) {
-  return window['go']['main']['App']['Greet'](arg1);
-}
-
 export function ManualUpdate() {
   return window['go']['main']['App']['ManualUpdate']();
 }

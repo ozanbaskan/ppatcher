@@ -264,6 +264,8 @@ setup_build_config() {
             local mode=$(jq -r '.mode // empty' "$config_file")
             local version=$(jq -r '.version // empty' "$config_file")
             local description=$(jq -r '.description // empty' "$config_file")
+            local title=$(jq -r '.title // empty' "$config_file")
+            local displayName=$(jq -r '.displayName // empty' "$config_file")
             
             # Set environment variables if values exist
             if [[ -n "$backend" && "$backend" != "null" ]]; then
@@ -294,6 +296,16 @@ setup_build_config() {
             if [[ -n "$description" && "$description" != "null" ]]; then
                 export DESCRIPTION="$description"
                 print_info "Using description: $description"
+            fi
+            
+            if [[ -n "$title" && "$title" != "null" ]]; then
+                export TITLE="$title"
+                print_info "Using title: $title"
+            fi
+            
+            if [[ -n "$displayName" && "$displayName" != "null" ]]; then
+                export DISPLAY_NAME="$displayName"
+                print_info "Using display name: $displayName"
             fi
         else
             print_warning "jq not available, using default config values"
@@ -347,12 +359,41 @@ build_platform() {
     
     print_info "Running: $wails_cmd"
     
-    # Execute build command with modified executable for Windows
-    local build_cmd
-    if [[ "$os" == "windows" && -n "$build_executable" ]]; then
-        build_cmd="EXECUTABLE=\"$build_executable\" $wails_cmd"
-    else
-        build_cmd="$wails_cmd"
+    # Execute build command with all environment variables
+    local build_cmd="$wails_cmd"
+    local env_vars=""
+    
+    # Build environment variable string for the command
+    if [[ -n "$BACKEND" ]]; then
+        env_vars="$env_vars BACKEND=\"$BACKEND\""
+    fi
+    if [[ -n "$COLOR_PALETTE" ]]; then
+        env_vars="$env_vars COLOR_PALETTE=\"$COLOR_PALETTE\""
+    fi
+    if [[ -n "$MODE" ]]; then
+        env_vars="$env_vars MODE=\"$MODE\""
+    fi
+    if [[ -n "$VERSION" ]]; then
+        env_vars="$env_vars VERSION=\"$VERSION\""
+    fi
+    if [[ -n "$DESCRIPTION" ]]; then
+        env_vars="$env_vars DESCRIPTION=\"$DESCRIPTION\""
+    fi
+    if [[ -n "$TITLE" ]]; then
+        env_vars="$env_vars TITLE=\"$TITLE\""
+    fi
+    if [[ -n "$DISPLAY_NAME" ]]; then
+        env_vars="$env_vars DISPLAY_NAME=\"$DISPLAY_NAME\""
+    fi
+    
+    # Add executable (with Windows .exe handling)
+    if [[ -n "$build_executable" ]]; then
+        env_vars="$env_vars EXECUTABLE=\"$build_executable\""
+    fi
+    
+    # Combine environment variables with build command
+    if [[ -n "$env_vars" ]]; then
+        build_cmd="$env_vars $wails_cmd"
     fi
     
     if eval "$build_cmd > /tmp/wails_build.log 2>&1"; then

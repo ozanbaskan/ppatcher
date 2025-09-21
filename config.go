@@ -30,6 +30,12 @@ func InitConfig() {
 	if envMode := os.Getenv("MODE"); envMode != "" {
 		BuildConfig.Mode = envMode
 	}
+	if envVersion := os.Getenv("VERSION"); envVersion != "" {
+		BuildConfig.Version = envVersion
+	}
+	if envDescription := os.Getenv("DESCRIPTION"); envDescription != "" {
+		BuildConfig.Description = envDescription
+	}
 }
 
 type Config struct {
@@ -37,6 +43,8 @@ type Config struct {
 	Executable   string `json:"executable"`
 	ColorPalette string `json:"colorPalette"`
 	Mode         string `json:"mode"`
+	Version      string `json:"version"`
+	Description  string `json:"description"`
 }
 
 func MarshalConfig(data []byte) *Config {

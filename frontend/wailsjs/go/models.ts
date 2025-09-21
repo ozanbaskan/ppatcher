@@ -5,6 +5,8 @@ export namespace main {
 	    executable: string;
 	    colorPalette: string;
 	    mode: string;
+	    version: string;
+	    description: string;
 	
 	    static createFrom(source: any = {}) {
 	        return new Config(source);
@@ -16,6 +18,8 @@ export namespace main {
 	        this.executable = source["executable"];
 	        this.colorPalette = source["colorPalette"];
 	        this.mode = source["mode"];
+	        this.version = source["version"];
+	        this.description = source["description"];
 	    }
 	}
 

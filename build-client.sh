@@ -162,6 +162,8 @@ setup_build_config() {
             local executable=$(jq -r '.executable // empty' "$config_file")
             local colorPalette=$(jq -r '.colorPalette // empty' "$config_file")
             local mode=$(jq -r '.mode // empty' "$config_file")
+            local version=$(jq -r '.version // empty' "$config_file")
+            local description=$(jq -r '.description // empty' "$config_file")
             
             # Set environment variables if values exist
             if [[ -n "$backend" && "$backend" != "null" ]]; then
@@ -182,6 +184,16 @@ setup_build_config() {
             if [[ -n "$mode" && "$mode" != "null" ]]; then
                 export MODE="$mode"
                 print_info "Using mode: $mode"
+            fi
+            
+            if [[ -n "$version" && "$version" != "null" ]]; then
+                export VERSION="$version"
+                print_info "Using version: $version"
+            fi
+            
+            if [[ -n "$description" && "$description" != "null" ]]; then
+                export DESCRIPTION="$description"
+                print_info "Using description: $description"
             fi
         else
             print_warning "jq not available, using default config values"

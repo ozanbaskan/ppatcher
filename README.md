@@ -103,7 +103,6 @@ The build system supports:
 
 #### Linux  
 - GTK-based UI with native look and feel
-- AppImage packaging support
 - Desktop integration with .desktop files
 - Distribution-specific packaging options
 
@@ -111,7 +110,6 @@ The build system supports:
 - Native Cocoa interface
 - Code signing and notarization support
 - DMG packaging with custom backgrounds
-- Mac App Store compatibility
 
 ## Development
 

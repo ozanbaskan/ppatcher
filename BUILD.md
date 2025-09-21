@@ -97,14 +97,13 @@ Create a configuration file (e.g., `my-config.json`) with your specific settings
 **Linux:**
 
 - Executable names used as-is (no automatic extensions)
-- Desktop integration with custom icons
-- AppImage packaging support
+- Desktop integration with custom icons and .desktop file generation
 
 **macOS:**
 
-- App bundle creation with custom icons
-- Info.plist integration with version and description
-- Native macOS look and feel
+- App bundle creation with custom icons and metadata integration
+- Info.plist integration with version and description fields
+- Native macOS look and feel with system themes
 
 #### Common Configuration Examples
 

@@ -103,13 +103,13 @@ The build system supports:
 
 #### Linux  
 - GTK-based UI with native look and feel
-- Desktop integration with .desktop files
-- Distribution-specific packaging options
+- Standard executable distribution
+- Compatible with major Linux distributions
 
 #### macOS
-- Native Cocoa interface
+- Native macOS application bundle generation
 - Code signing and notarization support
-- DMG packaging with custom backgrounds
+- Standard .app bundle distribution
 
 ## Development
 

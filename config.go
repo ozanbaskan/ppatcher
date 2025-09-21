@@ -36,6 +36,12 @@ func InitConfig() {
 	if envDescription := os.Getenv("DESCRIPTION"); envDescription != "" {
 		BuildConfig.Description = envDescription
 	}
+	if envTitle := os.Getenv("TITLE"); envTitle != "" {
+		BuildConfig.Title = envTitle
+	}
+	if envDisplayName := os.Getenv("DISPLAY_NAME"); envDisplayName != "" {
+		BuildConfig.DisplayName = envDisplayName
+	}
 }
 
 type Config struct {
@@ -45,6 +51,8 @@ type Config struct {
 	Mode         string `json:"mode"`
 	Version      string `json:"version"`
 	Description  string `json:"description"`
+	Title        string `json:"title"`
+	DisplayName  string `json:"displayName"`
 	Logo         string `json:"logo"`
 	Icon         string `json:"icon"`
 }

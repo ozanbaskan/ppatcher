@@ -125,6 +125,12 @@ download_or_copy_file() {
     fi
 }
 
+# Global variables to track cleanup
+LOGO_MODIFIED=false
+APP_TSX_BACKUP=""
+CUSTOM_LOGO_FILE=""
+CUSTOM_ICON_FILE=""
+
 # Function to process images
 process_images() {
     local logo_processed=false
@@ -144,11 +150,18 @@ process_images() {
     # Process logo image
     if [[ -n "$logo_image" && "$logo_image" != "null" ]]; then
         mkdir -p frontend/src/assets/images
-        if download_or_copy_file "$logo_image" "frontend/src/assets/images/logo-custom.png" "Logo image"; then
-            # Update the App.tsx to use the custom logo
+        CUSTOM_LOGO_FILE="frontend/src/assets/images/logo-custom.png"
+        
+        if download_or_copy_file "$logo_image" "$CUSTOM_LOGO_FILE" "Logo image"; then
+            # Backup original App.tsx before modifying
             if [[ -f "frontend/src/App.tsx" ]]; then
+                APP_TSX_BACKUP="frontend/src/App.tsx.backup.$$"
+                cp "frontend/src/App.tsx" "$APP_TSX_BACKUP"
+                
+                # Update the App.tsx to use the custom logo
                 sed -i 's|logo from "./assets/images/logo.jpeg"|logo from "./assets/images/logo-custom.png"|g' frontend/src/App.tsx
                 print_success "Updated App.tsx to use custom logo"
+                LOGO_MODIFIED=true
                 logo_processed=true
             fi
         fi
@@ -157,7 +170,8 @@ process_images() {
     # Process app icon
     if [[ -n "$icon_image" && "$icon_image" != "null" ]]; then
         mkdir -p build
-        if download_or_copy_file "$icon_image" "build/appicon.png" "App icon"; then
+        CUSTOM_ICON_FILE="build/appicon.png"
+        if download_or_copy_file "$icon_image" "$CUSTOM_ICON_FILE" "App icon"; then
             print_success "App icon updated for build process"
             icon_processed=true
         fi
@@ -171,6 +185,58 @@ process_images() {
         return 0
     fi
 }
+
+# Function to cleanup build artifacts
+cleanup_build_artifacts() {
+    local cleanup_performed=false
+    
+    print_info "Cleaning up build artifacts..."
+    
+    # Restore original App.tsx if it was modified
+    if [[ "$LOGO_MODIFIED" == "true" && -f "$APP_TSX_BACKUP" ]]; then
+        if mv "$APP_TSX_BACKUP" "frontend/src/App.tsx"; then
+            print_success "Restored original App.tsx"
+            cleanup_performed=true
+        else
+            print_warning "Failed to restore original App.tsx from backup"
+        fi
+        LOGO_MODIFIED=false
+    fi
+    
+    # Remove custom logo file if it was created
+    if [[ -n "$CUSTOM_LOGO_FILE" && -f "$CUSTOM_LOGO_FILE" ]]; then
+        if rm -f "$CUSTOM_LOGO_FILE"; then
+            print_success "Removed custom logo file"
+            cleanup_performed=true
+        else
+            print_warning "Failed to remove custom logo file: $CUSTOM_LOGO_FILE"
+        fi
+        CUSTOM_LOGO_FILE=""
+    fi
+    
+    # Remove custom icon file if it was created (optional, as it's in build dir)
+    if [[ -n "$CUSTOM_ICON_FILE" && -f "$CUSTOM_ICON_FILE" ]]; then
+        if rm -f "$CUSTOM_ICON_FILE"; then
+            print_success "Removed custom icon file"
+            cleanup_performed=true
+        else
+            print_warning "Failed to remove custom icon file: $CUSTOM_ICON_FILE"
+        fi
+        CUSTOM_ICON_FILE=""
+    fi
+    
+    # Clean up any leftover backup files
+    if find frontend/src -name "*.backup.*" -type f -delete 2>/dev/null; then
+        cleanup_performed=true
+    fi
+    
+    if [[ "$cleanup_performed" == "true" ]]; then
+        print_success "Build artifacts cleaned up successfully"
+    fi
+}
+
+# Trap to ensure cleanup on exit
+trap cleanup_build_artifacts EXIT
 create_sample_config() {
     local config_file="$1"
     local config_dir=$(dirname "$config_file")
@@ -572,6 +638,7 @@ if [[ $successful_builds -gt 0 ]]; then
     print_info "You can now distribute these executables to your users."
 fi
 
+# Cleanup will be handled by the EXIT trap
 # Exit with error code if any builds failed
 if [[ $failed_builds -gt 0 ]]; then
     exit 1

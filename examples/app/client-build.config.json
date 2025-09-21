@@ -1,0 +1,12 @@
+{
+  "backend": "http://192.168.1.103:3001",
+  "executable": "start",
+  "colorPalette": "green",
+  "mode": "production",
+  "description": "Best App Ever",
+  "displayName": "Best App",
+  "title": "a ppatcher app",
+  "outputName": "ppatcherapp",
+  "logo": "/home/ozan/projects/ppatcher/examples/app/logo.png",
+  "version": "3.0.0"
+}

@@ -30,13 +30,13 @@ type MetaForFile struct {
 	Size int64  `json:"size"`
 }
 
-const (
+var (
 	metaFile      = "meta.json"
 	filesmetaFile = "filesmeta.json"
-	port          = ":3000"
 )
 
 var (
+	port           = ":3000"
 	filesDir       = "./files"
 	metaCache      []byte
 	filesMetaCache []byte
@@ -49,9 +49,28 @@ var (
 )
 
 func main() {
+	exeDir, err := os.Executable()
+	if err != nil {
+		log.Fatal("Could not get executable path: ", err)
+	}
+
+	exeDir = filepath.Dir(exeDir)
+
+	err = os.Chdir(exeDir)
+	if err != nil {
+		log.Fatal("Could not change working directory: ", err)
+	}
+
 	filesDirEnv, exists := os.LookupEnv("FILES_DIR")
 	if exists && filesDirEnv != "" {
 		filesDir = filesDirEnv
+	}
+
+	port, exists = os.LookupEnv("PORT")
+	if !exists || port == "" {
+		port = ":3000"
+	} else if port[0] != ':' {
+		port = ":" + port
 	}
 
 	// Create files directory if it doesn't exist

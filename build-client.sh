@@ -354,8 +354,18 @@ build_platform() {
     if [[ "$debug" == "true" ]]; then
         wails_cmd="$wails_cmd --debug"
     fi
-    
-    wails_cmd="$wails_cmd --platform $platform --o $output_file"
+
+    ldflags="-X 'main.DefaultBackend=${BACKEND}' \
+         -X 'main.DefaultExecutable=${EXECUTABLE}' \
+         -X 'main.DefaultPalette=${COLOR_PALETTE}' \
+         -X 'main.DefaultMode=${MODE}' \
+         -X 'main.DefaultVersion=${VERSION}' \
+         -X 'main.DefaultDesc=${DESCRIPTION}' \
+         -X 'main.DefaultTitle=${TITLE}' \
+         -X 'main.DefaultDisplay=${DISPLAY_NAME}' \
+         -X 'main.Built=true'"
+
+    wails_cmd="$wails_cmd --platform $platform --o $output_file --ldflags \"$ldflags\""
     
     print_info "Running: $wails_cmd"
     

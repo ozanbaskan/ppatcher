@@ -1,0 +1,12 @@
+{
+  "backend": "http://192.168.1.103:3002",
+  "executable": "",
+  "colorPalette": "neutral",
+  "mode": "production",
+  "description": "Keep your movies up to date",
+  "displayName": "Movie Archive",
+  "title": "ppatcher movie archive client",
+  "outputName": "ppatchermoviearchive",
+  "logo": "/home/ozan/projects/ppatcher/examples/movie-archive/logo.png",
+  "version": "4.0.0"
+}

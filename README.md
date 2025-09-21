@@ -1,6 +1,7 @@
 # PPatcher
 
-<img width="960" height="576" alt="PPatcher Screenshot" src="https://github.com/user-attachments/assets/2ef50606-c1c8-4c02-8d26-e9b0d5624cf3" />
+https://github.com/user-attachments/assets/7d2722f3-c8f6-470d-8164-9a305d3577d4
+
 
 A modern, cross-platform game patcher built with Wails and Go. PPatcher provides a sleek interface for downloading and applying game updates with full customization support for creating branded client executables.
 

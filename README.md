@@ -1,6 +1,6 @@
 # PPatcher
 
-## Blazingly fast file patcher
+## 🚀 Blazingly fast file patcher
 
 <img width="962" height="576" alt="image" src="https://github.com/user-attachments/assets/1bf376bf-23bf-42c9-b2a7-fedca51f6bec" />
 

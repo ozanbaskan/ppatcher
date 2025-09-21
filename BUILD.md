@@ -693,6 +693,8 @@ You can override config values with environment variables for flexible deploymen
 | `MODE`               | `mode`         | Override build mode        | `dev`                          |
 | `VERSION`            | `version`      | Override version string    | `v4.0.0-beta`                  |
 | `DESCRIPTION`        | `description`  | Override description/title | `My Game Beta Patcher`         |
+| `TITLE`              | `title`        | Override internal title    | `My Game Dev`                  |
+| `DISPLAY_NAME`       | `displayName`  | Override display name      | `Dev Game Patcher`             |
 
 **Usage examples:**
 
@@ -817,7 +819,7 @@ jobs:
 
       - name: Create release (production only)
         if: matrix.config == 'production' && startsWith(github.ref, 'refs/tags/')
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           files: build/bin/*
           name: "Your Game Patcher ${{ github.ref_name }}"

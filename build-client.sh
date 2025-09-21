@@ -149,26 +149,58 @@ setup_environment() {
     print_success "Environment setup complete"
 }
 
+# Set up environment variables from config file
+setup_build_config() {
+    local config_file="$1"
+    
+    if [[ -f "$config_file" ]]; then
+        print_info "Loading configuration from $config_file"
+        
+        # Use jq to extract config values and set environment variables
+        if command -v jq &> /dev/null; then
+            local backend=$(jq -r '.backend // empty' "$config_file")
+            local executable=$(jq -r '.executable // empty' "$config_file")
+            local colorPalette=$(jq -r '.colorPalette // empty' "$config_file")
+            local mode=$(jq -r '.mode // empty' "$config_file")
+            
+            # Set environment variables if values exist
+            if [[ -n "$backend" && "$backend" != "null" ]]; then
+                export BACKEND="$backend"
+                print_info "Using backend: $backend"
+            fi
+            
+            if [[ -n "$executable" && "$executable" != "null" ]]; then
+                export EXECUTABLE="$executable"
+                print_info "Using executable: $executable"
+            fi
+            
+            if [[ -n "$colorPalette" && "$colorPalette" != "null" ]]; then
+                export COLOR_PALETTE="$colorPalette"
+                print_info "Using color palette: $colorPalette"
+            fi
+            
+            if [[ -n "$mode" && "$mode" != "null" ]]; then
+                export MODE="$mode"
+                print_info "Using mode: $mode"
+            fi
+        else
+            print_warning "jq not available, using default config values"
+        fi
+    else
+        print_info "Config file not found: $config_file, using defaults"
+    fi
+}
+
 # buildForTarget builds for a specific target platform
 build_platform() {
     local platform="$1"
     local config_file="$2"
     local clean="$3"
     local debug="$4"
+    local output_name="$5"
     
     local os=$(echo "$platform" | cut -d'/' -f1)
     local arch=$(echo "$platform" | cut -d'/' -f2)
-    
-    # Read config to get output name
-    local output_name="ppatcher"
-    if [[ -f "$config_file" ]]; then
-        if command -v jq &> /dev/null; then
-            local config_output_name=$(jq -r '.outputName // "ppatcher"' "$config_file")
-            if [[ "$config_output_name" != "null" ]]; then
-                output_name="$config_output_name"
-            fi
-        fi
-    fi
     
     # Set output filename
     local output_file="${output_name}-${os}-${arch}"
@@ -296,43 +328,31 @@ check_prerequisites
 # Setup environment
 setup_environment
 
-# Backup original config and use build config
-if [[ "$CONFIG_FILE" != "config.json" ]]; then
-    if [[ -f "config.json" ]]; then
-        cp "config.json" "config.json.bak"
-    fi
-    cp "$CONFIG_FILE" "config.json"
-fi
-
-# Ensure we restore the original config on exit
-cleanup() {
-    if [[ -f "config.json.bak" ]]; then
-        mv "config.json.bak" "config.json"
-    fi
-}
-trap cleanup EXIT
+# Set up build configuration from the specified config file
+setup_build_config "$CONFIG_FILE"
 
 # Build for each platform
 successful_builds=0
 failed_builds=0
 built_files=()
 
+# Get output name from config file once
+output_name="ppatcher"
+if [[ -f "$CONFIG_FILE" ]]; then
+    if command -v jq &> /dev/null; then
+        config_output_name=$(jq -r '.outputName // "ppatcher"' "$CONFIG_FILE")
+        if [[ "$config_output_name" != "null" && -n "$config_output_name" ]]; then
+            output_name="$config_output_name"
+        fi
+    fi
+fi
+
 IFS=',' read -ra PLATFORM_ARRAY <<< "$PLATFORMS"
 for platform in "${PLATFORM_ARRAY[@]}"; do
     platform=$(echo "$platform" | xargs) # trim whitespace
     
-    if build_platform "$platform" "$CONFIG_FILE" "$CLEAN" "$DEBUG"; then
+    if build_platform "$platform" "$CONFIG_FILE" "$CLEAN" "$DEBUG" "$output_name"; then
         successful_builds=$((successful_builds + 1))
-        
-        output_name="ppatcher"
-        if [[ -f "$CONFIG_FILE" ]]; then
-            if command -v jq &> /dev/null; then
-                config_output_name=$(jq -r '.outputName // "ppatcher"' "$CONFIG_FILE")
-                if [[ "$config_output_name" != "null" ]]; then
-                    output_name="$config_output_name"
-                fi
-            fi
-        fi
         
         os=$(echo "$platform" | cut -d'/' -f1)
         arch=$(echo "$platform" | cut -d'/' -f2)

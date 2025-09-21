@@ -322,7 +322,7 @@ for platform in "${PLATFORM_ARRAY[@]}"; do
     platform=$(echo "$platform" | xargs) # trim whitespace
     
     if build_platform "$platform" "$CONFIG_FILE" "$CLEAN" "$DEBUG"; then
-        ((successful_builds++))
+        successful_builds=$((successful_builds + 1))
         
         output_name="ppatcher"
         if [[ -f "$CONFIG_FILE" ]]; then
@@ -342,7 +342,7 @@ for platform in "${PLATFORM_ARRAY[@]}"; do
         fi
         built_files+=("build/bin/$output_file")
     else
-        ((failed_builds++))
+        failed_builds=$((failed_builds + 1))
     fi
 done
 

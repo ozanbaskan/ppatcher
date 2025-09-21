@@ -454,11 +454,6 @@ func (a *App) StartExecutable() {
 		return
 	}
 
-	// On Windows, automatically add .exe extension if not already present
-	if goRunTime.GOOS == "windows" && !strings.HasSuffix(strings.ToLower(executablePath), ".exe") {
-		executablePath += ".exe"
-	}
-
 	if !filepath.IsAbs(executablePath) {
 		absPath, err := filepath.Abs(executablePath)
 		if err != nil {

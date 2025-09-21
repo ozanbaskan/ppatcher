@@ -222,6 +222,16 @@ build_platform() {
     
     print_info "Building for $platform..."
     
+    # For Windows builds, add .exe to executable if not already present
+    local build_executable="$EXECUTABLE"
+    if [[ "$os" == "windows" && -n "$build_executable" ]]; then
+        # Check if executable doesn't already end with .exe (case insensitive)
+        if [[ ! "$build_executable" =~ \.[eE][xX][eE]$ ]]; then
+            build_executable="${build_executable}.exe"
+            print_info "Windows build: Using executable with .exe extension: $build_executable"
+        fi
+    fi
+    
     # Build wails command
     local wails_cmd="wails build"
     
@@ -237,8 +247,15 @@ build_platform() {
     
     print_info "Running: $wails_cmd"
     
-    # Execute build command and capture result
-    if $wails_cmd > /tmp/wails_build.log 2>&1; then
+    # Execute build command with modified executable for Windows
+    local build_cmd
+    if [[ "$os" == "windows" && -n "$build_executable" ]]; then
+        build_cmd="EXECUTABLE=\"$build_executable\" $wails_cmd"
+    else
+        build_cmd="$wails_cmd"
+    fi
+    
+    if eval "$build_cmd > /tmp/wails_build.log 2>&1"; then
         local built_file="build/bin/$output_file"
         if [[ -f "$built_file" ]]; then
             print_success "Build successful for $platform: $built_file"

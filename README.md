@@ -1,6 +1,6 @@
 # PPatcher
 
-<img width="966" height="584" alt="image" src="https://github.com/user-attachments/assets/e2fff5ee-1448-468a-8a4c-22776b3ef1d4" />
+<img width="962" height="576" alt="image" src="https://github.com/user-attachments/assets/1bf376bf-23bf-42c9-b2a7-fedca51f6bec" />
 
 ## Tutorial
 

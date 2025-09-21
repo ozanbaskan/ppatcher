@@ -297,10 +297,12 @@ check_prerequisites
 setup_environment
 
 # Backup original config and use build config
-if [[ -f "config.json" && "$CONFIG_FILE" != "config.json" ]]; then
-    cp "config.json" "config.json.bak"
+if [[ "$CONFIG_FILE" != "config.json" ]]; then
+    if [[ -f "config.json" ]]; then
+        cp "config.json" "config.json.bak"
+    fi
+    cp "$CONFIG_FILE" "config.json"
 fi
-cp "$CONFIG_FILE" "config.json"
 
 # Ensure we restore the original config on exit
 cleanup() {

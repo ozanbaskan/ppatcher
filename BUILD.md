@@ -16,8 +16,8 @@ The PPatcher build system allows you to create customized client executables tha
 
 Before building, ensure you have the following installed:
 
-1. **Go** (version 1.19 or later) - [Download](https://golang.org/dl/)
-2. **Node.js and npm** - [Download](https://nodejs.org/)
+1. **Go** (version 1.23 or later) - [Download](https://golang.org/dl/)
+2. **Node.js and npm** (version 20.x LTS or later) - [Download](https://nodejs.org/)
 3. **Wails CLI** - Install with: `go install github.com/wailsapp/wails/v2/cmd/wails@latest`
 
 ### Quick Prerequisites Setup
@@ -62,11 +62,13 @@ Create a configuration file (e.g., `my-config.json`) with your specific settings
 | ------------------ | ------ | -------------------------------------------------- | --------------------------------------------------------- |
 | **`backend`**      | String | URL of your patch server                           | `"https://patches.yourgame.com"`                          |
 | **`executable`**   | String | Path to executable to launch (relative to patcher) | `"game/yourgame"` (`.exe` added automatically on Windows) |
-| **`colorPalette`** | String | UI color theme                                     | `"green"`, `"blue"`, `"red"`, `"purple"`, etc.            |
+| **`colorPalette`** | String | UI color theme                                     | `"green"`, `"blue"`, `"red"`, `"purple"`, `"neutral"`     |
 | **`mode`**         | String | Build mode                                         | `"production"` or `"dev"`                                 |
-| **`outputName`**   | String | Name for output executable (without extension)     | `"yourgame-patcher"`                                      |
+| **`outputName`**   | String | Name for output executable (without extension)     | `"yourgame-patcher"` *(build-time only)*                 |
 | **`version`**      | String | Version displayed in UI and executable metadata    | `"v3.2.1"`, `"2.0.0"`                                     |
 | **`description`**  | String | App title shown in UI and executable metadata      | `"Your Game Patcher"`                                     |
+| **`title`**        | String | Internal title for the application                 | `"My Game"`                                               |
+| **`displayName`**  | String | Display name shown in the client                   | `"Game Patcher"`                                          |
 | **`logo`**         | String | Path or URL to logo image for client UI            | `"assets/logo.png"`, `"https://example.com/logo.png"`     |
 | **`icon`**         | String | Path or URL to app icon for executable             | `"assets/icon.ico"`, `"https://example.com/icon.png"`     |
 
@@ -568,7 +570,8 @@ During the build process:
 
 **Color Palette Options:**
 
-- `"green"` - Default green theme
+- `"neutral"` - Default neutral theme (system default)
+- `"green"` - Green theme
 - `"blue"` - Professional blue theme
 - `"red"` - Bold red theme
 - `"purple"` - Modern purple theme
@@ -588,7 +591,7 @@ During the build process:
 - Missing `version`: Falls back to "v1.0.0"
 - Missing `logo`: Uses default PPatcher logo
 - Missing `icon`: Uses default application icon
-- Invalid `colorPalette`: Falls back to "green"
+- Invalid `colorPalette`: Falls back to "neutral"
 
 ### Best Practices
 
@@ -728,15 +731,15 @@ jobs:
         config: [production, staging, development]
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
-      - uses: actions/setup-go@v3
+      - uses: actions/setup-go@v5
         with:
-          go-version: "1.21"
+          go-version: "1.23"
 
-      - uses: actions/setup-node@v3
+      - uses: actions/setup-node@v4
         with:
-          node-version: "18"
+          node-version: "20"
 
       - name: Install dependencies
         run: make install-deps
@@ -807,7 +810,7 @@ jobs:
           fi
 
       - name: Upload artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ppatcher-clients-${{ matrix.config }}
           path: build/bin/
@@ -842,8 +845,8 @@ stages:
   - deploy
 
 variables:
-  GO_VERSION: "1.21"
-  NODE_VERSION: "18"
+  GO_VERSION: "1.23"
+  NODE_VERSION: "20"
 
 .build_template: &build_template
   stage: build

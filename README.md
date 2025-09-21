@@ -165,7 +165,7 @@ make install-deps
 
 ## Examples
 
-See the `demo-config.json` file for a complete configuration example, and check `BUILD.md` for detailed workflows including:
+See the `demo-config.json` file for a complete configuration example, and check [`BUILD.md`](BUILD.md) for detailed workflows including:
 
 - Single-platform builds for specific operating systems
 - Multi-platform builds for cross-platform distribution  

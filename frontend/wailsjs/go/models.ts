@@ -7,6 +7,8 @@ export namespace main {
 	    mode: string;
 	    version: string;
 	    description: string;
+	    title: string;
+	    displayName: string;
 	    logo: string;
 	    icon: string;
 	
@@ -22,6 +24,8 @@ export namespace main {
 	        this.mode = source["mode"];
 	        this.version = source["version"];
 	        this.description = source["description"];
+	        this.title = source["title"];
+	        this.displayName = source["displayName"];
 	        this.logo = source["logo"];
 	        this.icon = source["icon"];
 	    }

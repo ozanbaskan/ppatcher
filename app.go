@@ -34,8 +34,6 @@ func NewApp() *App {
 func (a *App) startup(ctx context.Context) {
 	a.ctx = ctx
 
-	InitConfig()
-
 	if BuildConfig.Mode != "dev" {
 		exeDir, err := os.Executable()
 		if err != nil {

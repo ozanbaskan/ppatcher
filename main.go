@@ -14,6 +14,8 @@ import (
 var assets embed.FS
 
 func main() {
+	InitConfig()
+
 	bounds := screenshot.GetDisplayBounds(0)
 	screenWidth := bounds.Dx()
 	screenHeight := bounds.Dy()
@@ -24,7 +26,7 @@ func main() {
 	app := NewApp()
 
 	err := wails.Run(&options.App{
-		Title:  "ppatcher",
+		Title:  BuildConfig.Title,
 		Width:  windowWidth,
 		Height: windowHeight,
 		AssetServer: &assetserver.Options{

@@ -2,5 +2,8 @@
   "backend": "http://localhost:3000",
   "executable": "testprogram",
   "colorPalette": "green",
-  "mode": "dev"
+  "mode": "dev",
+  "description": "Keep your files up to date",
+  "displayName": "PPatcher Client",
+  "title": "ppatcher dev"
 }

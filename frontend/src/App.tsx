@@ -139,6 +139,7 @@ document.head.appendChild(styleSheet);
 
 function App() {
   const [config, setConfig] = useState({
+    displayName: "PPatcher",
     colorPalette: "neutral",
     showStartButton: false,
     version: "",
@@ -166,6 +167,7 @@ function App() {
     Config()
       .then((config) => {
         setConfig({
+          displayName: config.displayName || "PPatcher",
           colorPalette: config.colorPalette,
           showStartButton: !!config.executable,
           version: config.version || "",
@@ -263,10 +265,10 @@ function App() {
       <div style={styles.content}>
         <div style={styles.header}>
           <h1 style={{ ...styles.title, color: colors.textPrimary }}>
-            {config.description || "PPatcher"}
+            {config.displayName || "PPatcher"}
           </h1>
           <p style={{ ...styles.subtitle, color: colors.textSecondary }}>
-            Keep your files up to date
+            {config.description}
           </p>
         </div>
 
@@ -396,7 +398,7 @@ function App() {
 
       <div style={styles.footer}>
         <p style={{ ...styles.footerText, color: colors.textSecondary }}>
-          {config.description ? `${config.description} ${config.version || "v1.0.0"}` : "PPatcher v1.0.0"}
+          {`Version ${config.version || "1.0.0"}`}
         </p>
       </div>
     </div>

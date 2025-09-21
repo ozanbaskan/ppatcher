@@ -45,14 +45,14 @@ func InitConfig() {
 }
 
 type Config struct {
-	Backend      string `json:"backend"`
+	Backend      string `json:"backend" default:"http://localhost:3000"`
 	Executable   string `json:"executable"`
-	ColorPalette string `json:"colorPalette"`
-	Mode         string `json:"mode"`
-	Version      string `json:"version"`
-	Description  string `json:"description"`
-	Title        string `json:"title"`
-	DisplayName  string `json:"displayName"`
+	ColorPalette string `json:"colorPalette" default:"neutral"`
+	Mode         string `json:"mode" default:"production"`
+	Version      string `json:"version" default:"v1.0.0"`
+	Description  string `json:"description" default:"Keep your files up to date"`
+	Title        string `json:"title" default:"ppatcher"`
+	DisplayName  string `json:"displayName" default:"PPatcher"`
 	Logo         string `json:"logo"`
 	Icon         string `json:"icon"`
 }

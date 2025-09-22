@@ -29,15 +29,22 @@ PPatcher includes a comprehensive build system that allows you to create fully c
 ### Quick Start
 
 ```bash
+# Build your backend
+go build -o fileserver ./server/main.go
+
+# Put your files inside a folder called "files" and put your backend in the same directory
+# your-game-root-dir/
+# ├── files/
+# └── fileserver*
+
+# Run your backend
+./fileserver
+
 # Create a configuration file with all available options
 ./build-client.sh --create-config=my-game-config.json
 
-# Edit the config with your settings, then build
-./build-client.sh --config=my-game-config.json
-
-# Or use the Makefile
-make create-config CONFIG_FILE=my-game-config.json
-make build CONFIG_FILE=my-game-config.json
+# You can also checkout what is available
+./build-client.sh -h
 ```
 
 ### Complete Configuration Example

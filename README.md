@@ -38,7 +38,7 @@ go build -o fileserver ./server/main.go
 # └── fileserver*
 
 # Run your backend
-./fileserver
+PORT=3000 ./fileserver
 
 # Create a configuration file with all available options and build your client
 ./build-client.sh --create-config=my-game-config.json

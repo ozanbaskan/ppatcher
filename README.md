@@ -15,7 +15,7 @@ A modern, cross-platform game patcher built with Wails and Go. PPatcher provides
 
 - **Cross-platform support** (Windows, Linux, macOS)
 - **Real-time download progress** tracking with visual indicators
-- **Configurable backend server** support for any patch server
+- **Ready to go backend server** Compile and run the executable on any platform
 - **Automatic file integrity verification** with checksum validation
 - **Custom executable launching** after updates complete
 - **Customizable UI color themes** (green, blue, red, purple, etc.)

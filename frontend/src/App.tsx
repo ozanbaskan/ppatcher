@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import logo from "./assets/images/logo-custom.png";
+import logo from "./assets/images/logo.jpeg";
 import { EventsOn, EventsOff, EventsEmit } from "../wailsjs/runtime/runtime";
 import { ManualUpdate, Config, StartExecutable } from "../wailsjs/go/main/App";
 

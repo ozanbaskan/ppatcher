@@ -66,9 +66,9 @@ Create a configuration file (e.g., `my-config.json`) with your specific settings
 | **`mode`**         | String | Build mode                                         | `"production"` or `"dev"`                                 |
 | **`outputName`**   | String | Name for output executable (without extension)     | `"yourgame-patcher"` *(build-time only)*                 |
 | **`version`**      | String | Version displayed in UI and executable metadata    | `"v3.2.1"`, `"2.0.0"`                                     |
-| **`description`**  | String | App title shown in UI and executable metadata      | `"Your Game Patcher"`                                     |
-| **`title`**        | String | Internal title for the application                 | `"My Game"`                                               |
-| **`displayName`**  | String | Display name shown in the client                   | `"Game Patcher"`                                          |
+| **`description`**  | String | Subtitle/subheader shown under the main title in UI | `"Keep your files up to date"`                        |
+| **`title`**        | String | Window title bar text                                | `"My Game Patcher"`                                   |
+| **`displayName`**  | String | Main title displayed prominently in the client UI   | `"Game Patcher"`                                      |
 | **`logo`**         | String | Path or URL to logo image for client UI            | `"assets/logo.png"`, `"https://example.com/logo.png"`     |
 | **`icon`**         | String | Path or URL to app icon for executable             | `"assets/icon.ico"`, `"https://example.com/icon.png"`     |
 
@@ -76,10 +76,11 @@ Create a configuration file (e.g., `my-config.json`) with your specific settings
 
 **Dynamic UI Elements:**
 
-- The `description` field becomes the main title shown in the client interface
-- The `version` is displayed in the footer as "Description Version"
-- Custom `logo` replaces the default PPatcher logo in the interface
-- The `colorPalette` changes the entire UI theme and color scheme
+- **Main Title**: Uses `displayName` field (e.g., "Game Patcher") - displayed prominently as h1
+- **Subtitle**: Uses `description` field (e.g., "Keep your files up to date") - displayed as subheader under main title
+- **Window Title**: Uses `title` field for the window title bar (e.g., "My Game Patcher")
+- **Footer**: Shows `displayName` + `version` (e.g., "Game Patcher v2.1.0")
+- **Color Scheme**: Applied consistently across all UI components
 
 **Asset Handling:**
 
@@ -337,7 +338,9 @@ This example shows how to create a fully branded game patcher with custom logo a
      "mode": "production",
      "outputName": "MyAwesomeGame-Updater",
      "version": "v4.1.2",
-     "description": "My Awesome Game Updater",
+     "title": "My Awesome Game Patcher",
+     "displayName": "My Awesome Game Updater",
+     "description": "Keep your game files up to date",
      "logo": "https://cdn.mygame.com/branding/logo.png",
      "icon": "https://cdn.mygame.com/branding/app-icon.ico"
    }
@@ -356,7 +359,9 @@ This example shows how to create a fully branded game patcher with custom logo a
 
 Each executable will:
 
-- Display "My Awesome Game Updater v4.1.2" as the title
+- Display "My Awesome Game Updater" as the main title with "Keep your game files up to date" as subtitle
+- Window title bar will show "My Awesome Game Patcher"  
+- Footer will show "My Awesome Game Updater v4.1.2"
 - Use your custom logo in the interface
 - Have a purple color theme throughout
 - Launch `MyAwesomeGame.exe` (Windows) or `MyAwesomeGame` (Linux/macOS) after updates
@@ -580,14 +585,17 @@ During the build process:
 
 **Dynamic UI Elements:**
 
-- **Main Title**: Uses `description` field (e.g., "My Game Patcher")
-- **Footer**: Shows `description` + `version` (e.g., "My Game Patcher v2.1.0")
-- **Window Title**: Uses `description` for window title bar
+- **Main Title**: Uses `displayName` field (e.g., "Game Patcher") - displayed prominently as h1
+- **Subtitle**: Uses `description` field (e.g., "Keep your files up to date") - displayed as subheader under main title
+- **Window Title**: Uses `title` field for the window title bar (e.g., "My Game Patcher")
+- **Footer**: Shows `displayName` + `version` (e.g., "Game Patcher v2.1.0")
 - **Color Scheme**: Applied consistently across all UI components
 
 **Fallback Behavior:**
 
-- Missing `description`: Falls back to "PPatcher"
+- Missing `displayName`: Falls back to "PPatcher" 
+- Missing `title`: Falls back to "ppatcher"
+- Missing `description`: Shows empty subtitle
 - Missing `version`: Falls back to "v1.0.0"
 - Missing `logo`: Uses default PPatcher logo
 - Missing `icon`: Uses default application icon
@@ -692,9 +700,9 @@ You can override config values with environment variables for flexible deploymen
 | `COLOR_PALETTE`      | `colorPalette` | Override color palette     | `red`                          |
 | `MODE`               | `mode`         | Override build mode        | `dev`                          |
 | `VERSION`            | `version`      | Override version string    | `v4.0.0-beta`                  |
-| `DESCRIPTION`        | `description`  | Override description/title | `My Game Beta Patcher`         |
-| `TITLE`              | `title`        | Override internal title    | `My Game Dev`                  |
-| `DISPLAY_NAME`       | `displayName`  | Override display name      | `Dev Game Patcher`             |
+| `DESCRIPTION`        | `description`  | Override subtitle text     | `"Keep your files updated"`    |
+| `TITLE`              | `title`        | Override window title      | `"My Game Patcher"`            |
+| `DISPLAY_NAME`       | `displayName`  | Override main UI title     | `"My Game Updater"`            |
 
 **Usage examples:**
 

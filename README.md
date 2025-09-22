@@ -40,8 +40,10 @@ go build -o fileserver ./server/main.go
 # Run your backend
 ./fileserver
 
-# Create a configuration file with all available options
+# Create a configuration file with all available options and build your client
 ./build-client.sh --create-config=my-game-config.json
+
+# You are ready to distribute it to your friends
 
 # You can also checkout what is available
 ./build-client.sh -h

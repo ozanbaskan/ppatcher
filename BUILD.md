@@ -16,7 +16,7 @@ The PPatcher build system allows you to create customized client executables tha
 
 Before building, ensure you have the following installed:
 
-1. **Go** (version 1.23 or later) - [Download](https://golang.org/dl/)
+1. **Go** (version 1.24 or later) - [Download](https://golang.org/dl/)
 2. **Node.js and npm** (version 20.x LTS or later) - [Download](https://nodejs.org/)
 3. **Wails CLI** - Install with: `go install github.com/wailsapp/wails/v2/cmd/wails@latest`
 
@@ -58,19 +58,19 @@ Create a configuration file (e.g., `my-config.json`) with your specific settings
 
 #### Complete Configuration Options
 
-| Field              | Type   | Description                                        | Example                                                   |
-| ------------------ | ------ | -------------------------------------------------- | --------------------------------------------------------- |
-| **`backend`**      | String | URL of your patch server                           | `"https://patches.yourgame.com"`                          |
-| **`executable`**   | String | Path to executable to launch (relative to patcher) | `"game/yourgame"` (`.exe` added automatically on Windows) |
-| **`colorPalette`** | String | UI color theme                                     | `"green"`, `"blue"`, `"red"`, `"purple"`, `"neutral"`     |
-| **`mode`**         | String | Build mode                                         | `"production"` or `"dev"`                                 |
-| **`outputName`**   | String | Name for output executable (without extension)     | `"yourgame-patcher"` *(build-time only)*                 |
-| **`version`**      | String | Version displayed in UI and executable metadata    | `"v3.2.1"`, `"2.0.0"`                                     |
-| **`description`**  | String | Subtitle/subheader shown under the main title in UI | `"Keep your files up to date"`                        |
-| **`title`**        | String | Window title bar text                                | `"My Game Patcher"`                                   |
-| **`displayName`**  | String | Main title displayed prominently in the client UI   | `"Game Patcher"`                                      |
-| **`logo`**         | String | Path or URL to logo image for client UI            | `"assets/logo.png"`, `"https://example.com/logo.png"`     |
-| **`icon`**         | String | Path or URL to app icon for executable             | `"assets/icon.ico"`, `"https://example.com/icon.png"`     |
+| Field              | Type   | Description                                         | Example                                                   |
+| ------------------ | ------ | --------------------------------------------------- | --------------------------------------------------------- |
+| **`backend`**      | String | URL of your patch server                            | `"https://patches.yourgame.com"`                          |
+| **`executable`**   | String | Path to executable to launch (relative to patcher)  | `"game/yourgame"` (`.exe` added automatically on Windows) |
+| **`colorPalette`** | String | UI color theme                                      | `"green"`, `"blue"`, `"red"`, `"purple"`, `"neutral"`     |
+| **`mode`**         | String | Build mode                                          | `"production"` or `"dev"`                                 |
+| **`outputName`**   | String | Name for output executable (without extension)      | `"yourgame-patcher"` _(build-time only)_                  |
+| **`version`**      | String | Version displayed in UI and executable metadata     | `"v3.2.1"`, `"2.0.0"`                                     |
+| **`description`**  | String | Subtitle/subheader shown under the main title in UI | `"Keep your files up to date"`                            |
+| **`title`**        | String | Window title bar text                               | `"My Game Patcher"`                                       |
+| **`displayName`**  | String | Main title displayed prominently in the client UI   | `"Game Patcher"`                                          |
+| **`logo`**         | String | Path or URL to logo image for client UI             | `"assets/logo.png"`, `"https://example.com/logo.png"`     |
+| **`icon`**         | String | Path or URL to app icon for executable              | `"assets/icon.ico"`, `"https://example.com/icon.png"`     |
 
 #### Branding and UI Customization
 
@@ -360,7 +360,7 @@ This example shows how to create a fully branded game patcher with custom logo a
 Each executable will:
 
 - Display "My Awesome Game Updater" as the main title with "Keep your game files up to date" as subtitle
-- Window title bar will show "My Awesome Game Patcher"  
+- Window title bar will show "My Awesome Game Patcher"
 - Footer will show "My Awesome Game Updater v4.1.2"
 - Use your custom logo in the interface
 - Have a purple color theme throughout
@@ -593,7 +593,7 @@ During the build process:
 
 **Fallback Behavior:**
 
-- Missing `displayName`: Falls back to "PPatcher" 
+- Missing `displayName`: Falls back to "PPatcher"
 - Missing `title`: Falls back to "ppatcher"
 - Missing `description`: Shows empty subtitle
 - Missing `version`: Falls back to "v1.0.0"
@@ -693,16 +693,16 @@ For cross-compilation to work properly:
 
 You can override config values with environment variables for flexible deployment:
 
-| Environment Variable | Config Field   | Description                | Example                        |
-| -------------------- | -------------- | -------------------------- | ------------------------------ |
-| `BACKEND`            | `backend`      | Override backend URL       | `https://staging.yourgame.com` |
-| `EXECUTABLE`         | `executable`   | Override executable path   | `game/yourgame-dev`            |
-| `COLOR_PALETTE`      | `colorPalette` | Override color palette     | `red`                          |
-| `MODE`               | `mode`         | Override build mode        | `dev`                          |
-| `VERSION`            | `version`      | Override version string    | `v4.0.0-beta`                  |
-| `DESCRIPTION`        | `description`  | Override subtitle text     | `"Keep your files updated"`    |
-| `TITLE`              | `title`        | Override window title      | `"My Game Patcher"`            |
-| `DISPLAY_NAME`       | `displayName`  | Override main UI title     | `"My Game Updater"`            |
+| Environment Variable | Config Field   | Description              | Example                        |
+| -------------------- | -------------- | ------------------------ | ------------------------------ |
+| `BACKEND`            | `backend`      | Override backend URL     | `https://staging.yourgame.com` |
+| `EXECUTABLE`         | `executable`   | Override executable path | `game/yourgame-dev`            |
+| `COLOR_PALETTE`      | `colorPalette` | Override color palette   | `red`                          |
+| `MODE`               | `mode`         | Override build mode      | `dev`                          |
+| `VERSION`            | `version`      | Override version string  | `v4.0.0-beta`                  |
+| `DESCRIPTION`        | `description`  | Override subtitle text   | `"Keep your files updated"`    |
+| `TITLE`              | `title`        | Override window title    | `"My Game Patcher"`            |
+| `DISPLAY_NAME`       | `displayName`  | Override main UI title   | `"My Game Updater"`            |
 
 **Usage examples:**
 
@@ -745,7 +745,7 @@ jobs:
 
       - uses: actions/setup-go@v5
         with:
-          go-version: "1.23"
+          go-version: "1.24"
 
       - uses: actions/setup-node@v4
         with:
@@ -855,7 +855,7 @@ stages:
   - deploy
 
 variables:
-  GO_VERSION: "1.23"
+  GO_VERSION: "1.24"
   NODE_VERSION: "20"
 
 .build_template: &build_template

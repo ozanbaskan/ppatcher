@@ -45,7 +45,7 @@ docker run -d --name nginx-bootstrap \
   nginx:alpine
 
 echo "==> Requesting Let's Encrypt certificate..."
-docker compose -f docker-compose.prod.yml run --rm certbot certonly \
+docker compose -f docker-compose.prod.yml run --rm --entrypoint certbot certbot certonly \
   --webroot -w /var/www/certbot \
   -d "$DOMAIN" -d "www.$DOMAIN" \
   --email "$EMAIL" --agree-tos --no-eff-email

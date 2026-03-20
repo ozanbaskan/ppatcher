@@ -1,0 +1,1472 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PPatcher Setup Wizard</title>
+  <style>
+    :root {
+      --primary: #4361ee;
+      --primary-hover: #3a56d4;
+      --success: #059669;
+      --error: #dc2626;
+      --warning: #f59e0b;
+      --bg: #f3f4f6;
+      --card: #ffffff;
+      --text: #1f2937;
+      --text-secondary: #6b7280;
+      --border: #e5e7eb;
+      --radius: 12px;
+      --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06);
+      --shadow-lg: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    .wizard-container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 32px 24px;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+    .header h1 {
+      font-size: 1.75rem;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+    .header p {
+      color: var(--text-secondary);
+      font-size: 0.95rem;
+    }
+
+    /* Step Indicators */
+    .steps-bar {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0;
+      margin-bottom: 36px;
+    }
+    .step-indicator {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      cursor: default;
+      min-width: 72px;
+    }
+    .step-indicator.completed { cursor: pointer; }
+    .step-dot {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.8rem;
+      font-weight: 600;
+      border: 2px solid var(--border);
+      background: var(--card);
+      color: var(--text-secondary);
+      transition: all 0.2s;
+    }
+    .step-indicator.active .step-dot {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: #fff;
+    }
+    .step-indicator.completed .step-dot {
+      background: var(--success);
+      border-color: var(--success);
+      color: #fff;
+    }
+    .step-label {
+      font-size: 0.72rem;
+      color: var(--text-secondary);
+      font-weight: 500;
+    }
+    .step-indicator.active .step-label { color: var(--primary); font-weight: 600; }
+    .step-indicator.completed .step-label { color: var(--success); }
+    .step-line {
+      width: 40px;
+      height: 2px;
+      background: var(--border);
+      margin-bottom: 20px;
+      transition: background 0.2s;
+    }
+    .step-line.done { background: var(--success); }
+
+    /* Card */
+    .card {
+      background: var(--card);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 32px;
+    }
+    .card h2 {
+      font-size: 1.3rem;
+      margin-bottom: 4px;
+    }
+    .card > p {
+      color: var(--text-secondary);
+      margin-bottom: 24px;
+      font-size: 0.9rem;
+    }
+
+    /* Steps */
+    .step { display: none; }
+    .step.active { display: block; }
+
+    /* Form */
+    .form-group {
+      margin-bottom: 18px;
+    }
+    .form-group label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-bottom: 5px;
+      color: var(--text);
+    }
+    .form-group input[type="text"],
+    .form-group input[type="number"],
+    .form-group input[type="password"],
+    .form-group textarea {
+      width: 100%;
+      padding: 10px 14px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 0.9rem;
+      font-family: inherit;
+      background: #fafafa;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .form-group input:focus,
+    .form-group textarea:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.12);
+      background: #fff;
+    }
+    .form-group small {
+      display: block;
+      margin-top: 4px;
+      font-size: 0.78rem;
+      color: var(--text-secondary);
+    }
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+      font-family: inherit;
+    }
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    .btn-primary {
+      background: var(--primary);
+      color: #fff;
+    }
+    .btn-primary:hover:not(:disabled) { background: var(--primary-hover); }
+    .btn-secondary {
+      background: #e5e7eb;
+      color: var(--text);
+    }
+    .btn-secondary:hover:not(:disabled) { background: #d1d5db; }
+    .btn-success {
+      background: var(--success);
+      color: #fff;
+    }
+    .btn-success:hover:not(:disabled) { background: #047857; }
+    .btn-large {
+      padding: 14px 28px;
+      font-size: 1rem;
+    }
+
+    /* Nav */
+    .nav-buttons {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 24px;
+    }
+    .nav-buttons .spacer { flex: 1; }
+
+    /* Palette Picker */
+    .palette-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+    .palette-card {
+      border: 2px solid var(--border);
+      border-radius: 10px;
+      padding: 14px 10px;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.15s;
+      position: relative;
+    }
+    .palette-card:hover { border-color: #a5b4fc; }
+    .palette-card.selected {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.15);
+    }
+    .palette-card .palette-name {
+      font-size: 0.78rem;
+      font-weight: 600;
+      margin-bottom: 10px;
+      color: var(--text);
+    }
+    .swatches {
+      display: flex;
+      gap: 4px;
+      justify-content: center;
+    }
+    .swatch {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      border: 1px solid rgba(0,0,0,0.1);
+    }
+    .palette-check {
+      display: none;
+      position: absolute;
+      top: 6px;
+      right: 8px;
+      color: var(--primary);
+      font-size: 0.9rem;
+    }
+    .palette-card.selected .palette-check { display: block; }
+
+    /* Upload Zone */
+    .upload-zone {
+      border: 2px dashed var(--border);
+      border-radius: 10px;
+      padding: 24px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      margin-bottom: 18px;
+      position: relative;
+    }
+    .upload-zone:hover { border-color: var(--primary); background: #f8faff; }
+    .upload-zone.has-file { border-style: solid; border-color: var(--success); background: #f0fdf4; }
+    .upload-zone input[type="file"] {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+    }
+    .upload-zone .upload-text {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+    }
+    .upload-zone .upload-preview {
+      max-height: 60px;
+      max-width: 120px;
+      border-radius: 6px;
+      margin-bottom: 6px;
+    }
+    .upload-zone .file-name {
+      font-size: 0.8rem;
+      color: var(--success);
+      font-weight: 600;
+    }
+
+    /* Branding Layout with Preview */
+    .branding-layout {
+      display: grid;
+      grid-template-columns: 1fr 280px;
+      gap: 28px;
+      align-items: start;
+    }
+    .branding-layout > * {
+      min-width: 0;
+    }
+    @media (max-width: 768px) {
+      .branding-layout { grid-template-columns: 1fr; }
+    }
+
+    /* Preview Panel */
+    .preview-panel {
+      position: sticky;
+      top: 32px;
+    }
+    .preview-panel h3 {
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-bottom: 12px;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .client-preview {
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: var(--shadow-lg);
+      font-size: 0.8rem;
+    }
+    .preview-titlebar {
+      background: #1f2937;
+      color: #fff;
+      padding: 8px 12px;
+      font-size: 0.72rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .preview-titlebar::before {
+      content: '';
+      display: flex;
+      gap: 4px;
+    }
+    .preview-dots {
+      display: flex;
+      gap: 5px;
+    }
+    .preview-dots span {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+    }
+    .preview-body {
+      padding: 20px 16px;
+      text-align: center;
+      min-height: 200px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: background 0.3s;
+    }
+    .preview-body img {
+      max-height: 48px;
+      max-width: 80px;
+      border-radius: 6px;
+    }
+    .preview-body .p-name { font-size: 1rem; font-weight: 700; }
+    .preview-body .p-desc { font-size: 0.72rem; opacity: 0.7; }
+    .preview-body .p-btns { display: flex; gap: 6px; margin-top: 8px; }
+    .preview-body .p-btn {
+      padding: 5px 12px;
+      border-radius: 5px;
+      font-size: 0.68rem;
+      font-weight: 600;
+      border: none;
+      cursor: default;
+    }
+    .preview-body .p-version {
+      font-size: 0.62rem;
+      opacity: 0.5;
+      margin-top: auto;
+    }
+
+    /* Section header inside card */
+    .section-title {
+      font-size: 0.92rem;
+      font-weight: 600;
+      margin: 20px 0 10px 0;
+      color: var(--text);
+    }
+
+    /* Server Mode Toggle */
+    .mode-toggle {
+      display: flex;
+      background: #f3f4f6;
+      border-radius: 8px;
+      padding: 3px;
+      margin-bottom: 20px;
+      width: fit-content;
+    }
+    .mode-btn {
+      padding: 8px 20px;
+      border: none;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      background: transparent;
+      color: var(--text-secondary);
+      transition: all 0.15s;
+      font-family: inherit;
+    }
+    .mode-btn.active {
+      background: #fff;
+      color: var(--text);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    /* Server Status */
+    .server-status {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 16px;
+      border-radius: 8px;
+      margin-top: 16px;
+      font-size: 0.85rem;
+      font-weight: 500;
+    }
+    .server-status.running { background: #f0fdf4; color: #166534; }
+    .server-status.stopped { background: #fef2f2; color: #991b1b; }
+    .server-status.pending { background: #fff7ed; color: #9a3412; }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+    }
+    .running .status-dot { background: var(--success); }
+    .stopped .status-dot { background: var(--error); }
+    .pending .status-dot { background: var(--warning); }
+
+    /* Test Connection */
+    .test-card {
+      text-align: center;
+      padding: 48px 32px;
+    }
+    .test-info {
+      background: #f9fafb;
+      border-radius: 8px;
+      padding: 16px;
+      margin: 20px auto;
+      max-width: 400px;
+      font-size: 0.9rem;
+    }
+    .test-info .info-label {
+      font-size: 0.78rem;
+      color: var(--text-secondary);
+      margin-bottom: 4px;
+    }
+    .test-info .info-value {
+      font-weight: 600;
+      font-family: 'SF Mono', Consolas, monospace;
+      font-size: 0.88rem;
+    }
+    .test-result {
+      margin-top: 20px;
+      padding: 16px;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      display: none;
+    }
+    .test-result.success {
+      display: block;
+      background: #f0fdf4;
+      color: #166534;
+      border: 1px solid #bbf7d0;
+    }
+    .test-result.error {
+      display: block;
+      background: #fef2f2;
+      color: #991b1b;
+      border: 1px solid #fecaca;
+    }
+
+    /* Build */
+    .platform-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-bottom: 24px;
+    }
+    .platform-option {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 14px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.15s;
+      font-size: 0.85rem;
+    }
+    .platform-option:hover { border-color: var(--primary); }
+    .platform-option input:checked + span { font-weight: 600; }
+    .build-log {
+      background: #1e1e2e;
+      color: #cdd6f4;
+      border-radius: 8px;
+      padding: 16px;
+      margin-top: 16px;
+      max-height: 300px;
+      overflow-y: auto;
+      font-family: 'SF Mono', 'Cascadia Code', Consolas, monospace;
+      font-size: 0.78rem;
+      line-height: 1.5;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+    .build-files {
+      margin-top: 20px;
+      text-align: left;
+    }
+    .build-file {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 14px;
+      background: #f9fafb;
+      border-radius: 8px;
+      margin-bottom: 6px;
+      font-size: 0.85rem;
+    }
+    .build-file .file-name { font-weight: 600; }
+    .build-file .file-size { color: var(--text-secondary); font-size: 0.8rem; }
+
+    /* Done */
+    .done-card { text-align: center; padding: 48px 32px; }
+    .done-icon {
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      background: var(--success);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.8rem;
+      margin: 0 auto 16px;
+    }
+    .next-steps {
+      text-align: left;
+      background: #f9fafb;
+      border-radius: 8px;
+      padding: 20px 24px;
+      margin-top: 24px;
+    }
+    .next-steps h3 {
+      font-size: 0.92rem;
+      margin-bottom: 12px;
+    }
+    .next-steps ol {
+      padding-left: 20px;
+      font-size: 0.88rem;
+      color: var(--text-secondary);
+      line-height: 1.8;
+    }
+    .summary-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.88rem;
+    }
+    .summary-item:last-child { border-bottom: none; }
+    .summary-item .s-label { color: var(--text-secondary); }
+    .summary-item .s-value { font-weight: 600; }
+
+    /* Spinner */
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .spinner {
+      width: 20px;
+      height: 20px;
+      border: 2px solid var(--border);
+      border-top-color: var(--primary);
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+      display: inline-block;
+    }
+
+    /* Alert inline */
+    .alert {
+      padding: 10px 14px;
+      border-radius: 8px;
+      font-size: 0.83rem;
+      margin-top: 12px;
+    }
+    .alert-error { background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
+    .alert-success { background: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; }
+
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+  <div class="wizard-container">
+    <div class="header">
+      <h1>PPatcher Setup Wizard</h1>
+      <p>Configure and build your custom file patcher client</p>
+    </div>
+
+    <div class="steps-bar" id="stepsBar">
+      <div class="step-indicator active" data-step="0">
+        <div class="step-dot">1</div>
+        <span class="step-label">Project</span>
+      </div>
+      <div class="step-line"></div>
+      <div class="step-indicator" data-step="1">
+        <div class="step-dot">2</div>
+        <span class="step-label">Branding</span>
+      </div>
+      <div class="step-line"></div>
+      <div class="step-indicator" data-step="2">
+        <div class="step-dot">3</div>
+        <span class="step-label">Server</span>
+      </div>
+      <div class="step-line"></div>
+      <div class="step-indicator" data-step="3">
+        <div class="step-dot">4</div>
+        <span class="step-label">Test</span>
+      </div>
+      <div class="step-line"></div>
+      <div class="step-indicator" data-step="4">
+        <div class="step-dot">5</div>
+        <span class="step-label">Build</span>
+      </div>
+      <div class="step-line"></div>
+      <div class="step-indicator" data-step="5">
+        <div class="step-dot">6</div>
+        <span class="step-label">Done</span>
+      </div>
+    </div>
+
+    <!-- Step 0: Project -->
+    <section class="step active" id="step-0">
+      <div class="card">
+        <h2>Create Your Project</h2>
+        <p>Give your patcher project a name. A directory with this name will be created in the ppatcher folder.</p>
+        <div class="form-group">
+          <label for="projectName">Project Name</label>
+          <input type="text" id="projectName" placeholder="my-game" autocomplete="off">
+          <small>Alphanumeric, hyphens, and underscores only</small>
+        </div>
+        <div id="project-alert"></div>
+      </div>
+    </section>
+
+    <!-- Step 1: Branding -->
+    <section class="step" id="step-1">
+      <div class="card">
+        <h2>Customize Your Client</h2>
+        <p>Set how your patcher will look and feel.</p>
+        <div class="branding-layout">
+          <div class="branding-form">
+            <div class="form-row">
+              <div class="form-group">
+                <label for="displayName">Display Name</label>
+                <input type="text" id="displayName" placeholder="My Game">
+              </div>
+              <div class="form-group">
+                <label for="brandTitle">Window Title</label>
+                <input type="text" id="brandTitle" placeholder="My Game Patcher">
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="brandDesc">Description / Subtitle</label>
+              <input type="text" id="brandDesc" placeholder="Keep your files up to date">
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="brandVersion">Version</label>
+                <input type="text" id="brandVersion" placeholder="1.0.0" value="1.0.0">
+              </div>
+              <div class="form-group">
+                <label for="outputName">Output Binary Name</label>
+                <input type="text" id="outputName" placeholder="my-game-patcher">
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="executable">Executable to Launch</label>
+              <input type="text" id="executable" placeholder="game.exe (optional)">
+              <small>File to run when user clicks "Start". Leave empty if not needed.</small>
+            </div>
+
+            <div class="section-title">Color Palette</div>
+            <div class="palette-grid" id="paletteGrid"></div>
+
+            <div class="section-title">Logo</div>
+            <div class="upload-zone" id="logoZone">
+              <input type="file" id="logoInput" accept="image/*">
+              <div class="upload-text">Drag &amp; drop or click to upload a logo image</div>
+            </div>
+
+            <div class="section-title">App Icon</div>
+            <div class="upload-zone" id="iconZone">
+              <input type="file" id="iconInput" accept="image/*">
+              <div class="upload-text">Drag &amp; drop or click to upload an app icon</div>
+            </div>
+          </div>
+
+          <div class="preview-panel">
+            <h3>Preview</h3>
+            <div class="client-preview" id="clientPreview">
+              <div class="preview-titlebar">
+                <div class="preview-dots">
+                  <span style="background:#ff5f56"></span>
+                  <span style="background:#ffbd2e"></span>
+                  <span style="background:#27c93f"></span>
+                </div>
+                <span id="previewTitle">ppatcher</span>
+              </div>
+              <div class="preview-body" id="previewBody">
+                <img id="previewLogo" src="" style="display:none">
+                <div class="p-name" id="previewName">PPatcher</div>
+                <div class="p-desc" id="previewDesc">Keep your files up to date</div>
+                <div class="p-btns">
+                  <span class="p-btn" id="previewBtnStart">Start</span>
+                  <span class="p-btn" id="previewBtnUpdate">Check for Updates</span>
+                </div>
+                <div class="p-version" id="previewVersion">Version 1.0.0</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div id="branding-alert"></div>
+      </div>
+    </section>
+
+    <!-- Step 2: Server -->
+    <section class="step" id="step-2">
+      <div class="card">
+        <h2>Server Setup</h2>
+        <p>Configure where the file server will run. The patcher client connects to this server for updates.</p>
+
+        <div class="mode-toggle">
+          <button class="mode-btn active" data-mode="local" onclick="wizard.setServerMode('local')">Local Machine</button>
+          <button class="mode-btn" data-mode="ssh" onclick="wizard.setServerMode('ssh')">Remote Server (SSH)</button>
+        </div>
+
+        <div id="localConfig">
+          <div class="form-row">
+            <div class="form-group">
+              <label for="serverPort">Port</label>
+              <input type="number" id="serverPort" value="3000" min="1" max="65535">
+            </div>
+            <div class="form-group">
+              <label for="filesDir">Files Directory</label>
+              <input type="text" id="filesDir" readonly>
+              <small>Files to distribute live here</small>
+            </div>
+          </div>
+          <button class="btn btn-success" id="startServerBtn" onclick="wizard.startLocalServer()">
+            Start Server
+          </button>
+          <div id="localServerStatus"></div>
+        </div>
+
+        <div id="sshConfig" class="hidden">
+          <div class="form-row">
+            <div class="form-group">
+              <label for="sshHost">SSH Host</label>
+              <input type="text" id="sshHost" placeholder="192.168.1.100 or server.example.com">
+            </div>
+            <div class="form-group">
+              <label for="sshPort">SSH Port</label>
+              <input type="number" id="sshPort" value="22">
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="sshUser">SSH Username</label>
+            <input type="text" id="sshUser" placeholder="admin">
+          </div>
+          <div class="form-group">
+            <label for="sshPassword">SSH Password <small>(optional — used if key is not provided)</small></label>
+            <input type="password" id="sshPassword" placeholder="Enter password" autocomplete="off">
+          </div>
+          <div class="form-group">
+            <label>SSH Key <small>(optional)</small></label>
+            <div class="mode-toggle" style="margin-bottom:10px">
+              <button class="mode-btn active" data-keymode="path" onclick="wizard.setKeyMode('path')">File Path</button>
+              <button class="mode-btn" data-keymode="browse" onclick="wizard.setKeyMode('browse')">Browse</button>
+              <button class="mode-btn" data-keymode="paste" onclick="wizard.setKeyMode('paste')">Paste Key</button>
+            </div>
+            <div id="keyModePath">
+              <input type="text" id="sshKeyPath" placeholder="~/.ssh/id_rsa">
+            </div>
+            <div id="keyModeBrowse" class="hidden">
+              <div class="upload-zone" id="sshKeyZone" style="padding:16px;margin-bottom:0">
+                <input type="file" id="sshKeyInput">
+                <div class="upload-text" id="sshKeyFileName">Click to select your private key file</div>
+              </div>
+            </div>
+            <div id="keyModePaste" class="hidden">
+              <textarea id="sshKeyContent" rows="6" placeholder="-----BEGIN OPENSSH PRIVATE KEY-----&#10;...&#10;-----END OPENSSH PRIVATE KEY-----" style="width:100%;padding:10px 14px;border:1px solid var(--border);border-radius:8px;font-family:'SF Mono',Consolas,monospace;font-size:0.78rem;resize:vertical;background:#fafafa"></textarea>
+            </div>
+            <div id="sshKeyStatus"></div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="sshRemoteDir">Remote Directory</label>
+              <input type="text" id="sshRemoteDir" placeholder="~/ppatcher-server" value="~/ppatcher-server">
+            </div>
+            <div class="form-group">
+              <label for="sshServerPort">Server Port</label>
+              <input type="number" id="sshServerPort" value="3000">
+            </div>
+          </div>
+
+          <div style="display:flex; gap:10px; flex-wrap:wrap">
+            <button class="btn btn-secondary" onclick="wizard.testSSH()">Test SSH Connection</button>
+            <button class="btn btn-success" id="deployBtn" onclick="wizard.deploySSH()">Deploy &amp; Start Server</button>
+          </div>
+          <div id="sshStatus"></div>
+        </div>
+
+        <div id="server-alert"></div>
+      </div>
+    </section>
+
+    <!-- Step 3: Test Connection -->
+    <section class="step" id="step-3">
+      <div class="card test-card">
+        <h2>Test Connection</h2>
+        <p>Verify that the patcher client can connect to the file server.</p>
+        <div class="test-info">
+          <div class="info-label">Server URL</div>
+          <div class="info-value" id="testUrl">-</div>
+        </div>
+        <div style="margin-top:20px">
+          <button class="btn btn-primary btn-large" id="testBtn" onclick="wizard.testConnection()">
+            Test Connection
+          </button>
+        </div>
+        <div class="test-result" id="testResult"></div>
+      </div>
+    </section>
+
+    <!-- Step 4: Build -->
+    <section class="step" id="step-4">
+      <div class="card">
+        <h2>Build Patcher Client</h2>
+        <p>Select target platforms and build your custom patcher executable.</p>
+        <div class="platform-grid">
+          <label class="platform-option"><input type="checkbox" name="platform" value="linux/amd64" checked><span>Linux x64</span></label>
+          <label class="platform-option"><input type="checkbox" name="platform" value="windows/amd64" checked><span>Windows x64</span></label>
+          <label class="platform-option"><input type="checkbox" name="platform" value="darwin/amd64"><span>macOS Intel</span></label>
+          <label class="platform-option"><input type="checkbox" name="platform" value="darwin/arm64"><span>macOS ARM</span></label>
+          <label class="platform-option"><input type="checkbox" name="platform" value="linux/arm64"><span>Linux ARM64</span></label>
+          <label class="platform-option"><input type="checkbox" name="platform" value="windows/arm64"><span>Windows ARM</span></label>
+        </div>
+        <button class="btn btn-primary btn-large" id="buildBtn" onclick="wizard.startBuild()">
+          Build
+        </button>
+        <div id="buildOutput" class="hidden">
+          <div class="build-log" id="buildLog"></div>
+          <div class="build-files" id="buildFiles"></div>
+        </div>
+        <div id="build-alert"></div>
+      </div>
+    </section>
+
+    <!-- Step 5: Done -->
+    <section class="step" id="step-5">
+      <div class="card done-card">
+        <div class="done-icon">&#10003;</div>
+        <h2>Setup Complete!</h2>
+        <p>Your custom patcher client has been configured and built.</p>
+        <div id="summary" style="max-width:480px;margin:24px auto 0;text-align:left"></div>
+        <div class="next-steps">
+          <h3>What's Next?</h3>
+          <ol>
+            <li>Add your game/application files to the files directory</li>
+            <li>Keep the file server running so clients can check for updates</li>
+            <li>Distribute the built patcher executables to your users</li>
+            <li>When you update files, clients will auto-detect changes</li>
+          </ol>
+        </div>
+      </div>
+    </section>
+
+    <div class="nav-buttons">
+      <button class="btn btn-secondary hidden" id="prevBtn" onclick="wizard.prevStep()">&#8592; Back</button>
+      <div class="spacer"></div>
+      <button class="btn btn-primary" id="nextBtn" onclick="wizard.nextStep()">Next &#8594;</button>
+    </div>
+  </div>
+
+  <script>
+    const PALETTES = {
+      neutral: {
+        name: 'Neutral',
+        primary: '#6b7280', primaryHover: '#4b5563',
+        secondary: '#9ca3af', secondaryHover: '#6b7280',
+        background: 'linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%)',
+        textPrimary: '#374151', textSecondary: '#6b7280',
+        success: '#059669', error: '#dc2626', info: '#2563eb',
+        cardBg: '#ffffff', progressBg: '#e5e7eb',
+        disabled: '#d1d5db', disabledText: '#9ca3af',
+      },
+      blue: {
+        name: 'Blue',
+        primary: '#3182ce', primaryHover: '#2b6cb0',
+        secondary: '#63b3ed', secondaryHover: '#4299e1',
+        background: 'linear-gradient(135deg, #ebf8ff 0%, #bee3f8 100%)',
+        textPrimary: '#2a4365', textSecondary: '#4c51bf',
+        success: '#38a169', error: '#e53e3e', info: '#3182ce',
+        cardBg: '#ffffff', progressBg: '#e6fffa',
+        disabled: '#93c5fd', disabledText: '#93c5fd',
+      },
+      green: {
+        name: 'Green',
+        primary: '#38a169', primaryHover: '#2f855a',
+        secondary: '#68d391', secondaryHover: '#48bb78',
+        background: 'linear-gradient(135deg, #f0fff4 0%, #c6f6d5 100%)',
+        textPrimary: '#22543d', textSecondary: '#38a169',
+        success: '#38a169', error: '#e53e3e', info: '#3182ce',
+        cardBg: '#ffffff', progressBg: '#e6fffa',
+        disabled: '#9ae6b4', disabledText: '#9ae6b4',
+      },
+      purple: {
+        name: 'Purple',
+        primary: '#805ad5', primaryHover: '#6b46c1',
+        secondary: '#9f7aea', secondaryHover: '#805ad5',
+        background: 'linear-gradient(135deg, #faf5ff 0%, #e9d8fd 100%)',
+        textPrimary: '#322659', textSecondary: '#553c9a',
+        success: '#38a169', error: '#e53e3e', info: '#3182ce',
+        cardBg: '#ffffff', progressBg: '#e6fffa',
+        disabled: '#d6bcfa', disabledText: '#d6bcfa',
+      },
+    };
+
+    const wizard = {
+      currentStep: 0,
+      totalSteps: 6,
+      serverMode: 'local',
+      selectedPalette: 'neutral',
+      projectCreated: false,
+      serverStarted: false,
+      buildComplete: false,
+
+      init() {
+        this.renderPalettes();
+        this.updatePreview();
+        this.setupUploads();
+        this.updateNavButtons();
+
+        // Live preview updates
+        ['displayName', 'brandDesc', 'brandVersion', 'brandTitle'].forEach(id => {
+          const el = document.getElementById(id);
+          if (el) el.addEventListener('input', () => this.updatePreview());
+        });
+      },
+
+      // -- Navigation --
+      goToStep(n) {
+        if (n < 0 || n >= this.totalSteps) return;
+        document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+        document.getElementById('step-' + n).classList.add('active');
+        this.currentStep = n;
+        this.updateStepIndicators();
+        this.updateNavButtons();
+        this.onEnterStep(n);
+      },
+
+      async nextStep() {
+        const ok = await this.onLeaveStep(this.currentStep);
+        if (!ok) return;
+        if (this.currentStep < this.totalSteps - 1) {
+          this.goToStep(this.currentStep + 1);
+        }
+      },
+
+      prevStep() {
+        if (this.currentStep > 0) {
+          this.goToStep(this.currentStep - 1);
+        }
+      },
+
+      updateStepIndicators() {
+        document.querySelectorAll('.step-indicator').forEach((el, i) => {
+          el.classList.remove('active', 'completed');
+          if (i === this.currentStep) el.classList.add('active');
+          else if (i < this.currentStep) el.classList.add('completed');
+        });
+        document.querySelectorAll('.step-line').forEach((el, i) => {
+          el.classList.toggle('done', i < this.currentStep);
+        });
+      },
+
+      updateNavButtons() {
+        const prev = document.getElementById('prevBtn');
+        const next = document.getElementById('nextBtn');
+        prev.classList.toggle('hidden', this.currentStep === 0);
+        if (this.currentStep === this.totalSteps - 1) {
+          next.textContent = 'Close';
+        } else {
+          next.innerHTML = 'Next &#8594;';
+        }
+      },
+
+      onEnterStep(n) {
+        if (n === 3) {
+          // Populate test URL
+          const port = this.serverMode === 'ssh'
+            ? document.getElementById('sshServerPort').value
+            : document.getElementById('serverPort').value;
+          const host = this.serverMode === 'ssh'
+            ? document.getElementById('sshHost').value
+            : 'localhost';
+          document.getElementById('testUrl').textContent = 'http://' + host + ':' + port;
+        }
+      },
+
+      async onLeaveStep(n) {
+        if (n === 0) return await this.createProject();
+        if (n === 1) return await this.saveBranding();
+        if (n === 2) return await this.saveServer();
+        if (n === this.totalSteps - 1) { window.close(); return false; }
+        return true;
+      },
+
+      // -- Step 0: Project --
+      async createProject() {
+        if (this.projectCreated) return true;
+        const name = document.getElementById('projectName').value.trim();
+        if (!name) {
+          this.showAlert('project-alert', 'Please enter a project name', 'error');
+          return false;
+        }
+        if (!/^[a-zA-Z0-9_-]+$/.test(name)) {
+          this.showAlert('project-alert', 'Only letters, numbers, hyphens, and underscores allowed', 'error');
+          return false;
+        }
+        const res = await this.api('POST', '/api/project', { name });
+        if (!res.ok) {
+          this.showAlert('project-alert', res.error, 'error');
+          return false;
+        }
+        this.projectCreated = true;
+        document.getElementById('filesDir').value = name + '/files';
+        // Set defaults
+        document.getElementById('displayName').value = document.getElementById('displayName').value || name;
+        document.getElementById('brandTitle').value = document.getElementById('brandTitle').value || name + ' Patcher';
+        document.getElementById('outputName').value = document.getElementById('outputName').value || name + '-patcher';
+        this.updatePreview();
+        this.clearAlert('project-alert');
+        return true;
+      },
+
+      // -- Step 1: Branding --
+      renderPalettes() {
+        const grid = document.getElementById('paletteGrid');
+        grid.innerHTML = '';
+        for (const [key, pal] of Object.entries(PALETTES)) {
+          const card = document.createElement('div');
+          card.className = 'palette-card' + (key === this.selectedPalette ? ' selected' : '');
+          card.onclick = () => this.selectPalette(key);
+          card.innerHTML = `
+            <div class="palette-name">${pal.name}</div>
+            <div class="swatches">
+              <div class="swatch" style="background:${pal.primary}"></div>
+              <div class="swatch" style="background:${pal.secondary}"></div>
+              <div class="swatch" style="background:${pal.textPrimary}"></div>
+              <div class="swatch" style="background:${pal.success}"></div>
+            </div>
+            <div class="palette-check">&#10003;</div>
+          `;
+          grid.appendChild(card);
+        }
+      },
+
+      selectPalette(key) {
+        this.selectedPalette = key;
+        document.querySelectorAll('.palette-card').forEach(c => c.classList.remove('selected'));
+        const cards = document.querySelectorAll('.palette-card');
+        const keys = Object.keys(PALETTES);
+        cards[keys.indexOf(key)]?.classList.add('selected');
+        this.updatePreview();
+      },
+
+      updatePreview() {
+        const pal = PALETTES[this.selectedPalette];
+        const name = document.getElementById('displayName')?.value || 'PPatcher';
+        const desc = document.getElementById('brandDesc')?.value || 'Keep your files up to date';
+        const ver = document.getElementById('brandVersion')?.value || '1.0.0';
+        const title = document.getElementById('brandTitle')?.value || 'ppatcher';
+
+        document.getElementById('previewTitle').textContent = title;
+        document.getElementById('previewName').textContent = name;
+        document.getElementById('previewName').style.color = pal.textPrimary;
+        document.getElementById('previewDesc').textContent = desc;
+        document.getElementById('previewDesc').style.color = pal.textSecondary;
+        document.getElementById('previewVersion').textContent = 'Version ' + ver;
+        document.getElementById('previewVersion').style.color = pal.textSecondary;
+
+        const body = document.getElementById('previewBody');
+        body.style.background = pal.background;
+
+        document.getElementById('previewBtnStart').style.background = pal.primary;
+        document.getElementById('previewBtnStart').style.color = pal.cardBg;
+        document.getElementById('previewBtnUpdate').style.background = pal.secondary;
+        document.getElementById('previewBtnUpdate').style.color = pal.cardBg;
+      },
+
+      setupUploads() {
+        this.setupUploadZone('logoZone', 'logoInput', 'logo');
+        this.setupUploadZone('iconZone', 'iconInput', 'icon');
+        // SSH key file browse
+        document.getElementById('sshKeyInput').addEventListener('change', (e) => {
+          if (e.target.files.length) this.uploadSSHKeyFile(e.target.files[0]);
+        });
+      },
+
+      async uploadSSHKeyFile(file) {
+        const formData = new FormData();
+        formData.append('file', file);
+        const statusEl = document.getElementById('sshKeyStatus');
+        statusEl.innerHTML = '<div class="alert alert-success" style="margin-top:8px">Uploading...</div>';
+        try {
+          const response = await fetch('/api/upload/sshkey', { method: 'POST', body: formData });
+          const res = await response.json();
+          if (res.ok) {
+            document.getElementById('sshKeyPath').value = res.data.path;
+            document.getElementById('sshKeyFileName').textContent = file.name + ' \u2714';
+            document.getElementById('sshKeyZone').classList.add('has-file');
+            statusEl.innerHTML = '<div class="alert alert-success" style="margin-top:8px">Key saved: ' + this.escapeHtml(res.data.path) + '</div>';
+          } else {
+            statusEl.innerHTML = '<div class="alert alert-error" style="margin-top:8px">' + this.escapeHtml(res.error) + '</div>';
+          }
+        } catch (err) {
+          statusEl.innerHTML = '<div class="alert alert-error" style="margin-top:8px">' + this.escapeHtml(err.message) + '</div>';
+        }
+      },
+
+      async saveSSHKeyPasted() {
+        const content = document.getElementById('sshKeyContent').value;
+        if (!content.trim()) return;
+        const statusEl = document.getElementById('sshKeyStatus');
+        statusEl.innerHTML = '<div class="alert alert-success" style="margin-top:8px">Saving...</div>';
+        const res = await this.api('POST', '/api/upload/sshkey', { content });
+        if (res.ok) {
+          document.getElementById('sshKeyPath').value = res.data.path;
+          statusEl.innerHTML = '<div class="alert alert-success" style="margin-top:8px">Key saved: ' + this.escapeHtml(res.data.path) + '</div>';
+        } else {
+          statusEl.innerHTML = '<div class="alert alert-error" style="margin-top:8px">' + this.escapeHtml(res.error) + '</div>';
+        }
+      },
+
+      setupUploadZone(zoneId, inputId, type) {
+        const zone = document.getElementById(zoneId);
+        const input = document.getElementById(inputId);
+        input.addEventListener('change', () => {
+          if (input.files.length) this.uploadFile(type, input.files[0], zone);
+        });
+      },
+
+      async uploadFile(type, file, zone) {
+        const formData = new FormData();
+        formData.append('file', file);
+        try {
+          const response = await fetch('/api/upload/' + type, { method: 'POST', body: formData });
+          const res = await response.json();
+          if (res.ok) {
+            zone.classList.add('has-file');
+            const reader = new FileReader();
+            reader.onload = (e) => {
+              zone.innerHTML = `
+                <input type="file" id="${type}Input" accept="image/*">
+                <img class="upload-preview" src="${e.target.result}">
+                <div class="file-name">${file.name}</div>
+              `;
+              // Re-attach event
+              zone.querySelector('input').addEventListener('change', (ev) => {
+                if (ev.target.files.length) this.uploadFile(type, ev.target.files[0], zone);
+              });
+              if (type === 'logo') {
+                document.getElementById('previewLogo').src = e.target.result;
+                document.getElementById('previewLogo').style.display = 'block';
+              }
+            };
+            reader.readAsDataURL(file);
+          } else {
+            this.showAlert('branding-alert', res.error, 'error');
+          }
+        } catch (err) {
+          this.showAlert('branding-alert', 'Upload failed: ' + err.message, 'error');
+        }
+      },
+
+      async saveBranding() {
+        const displayName = document.getElementById('displayName').value.trim();
+        if (!displayName) {
+          this.showAlert('branding-alert', 'Display name is required', 'error');
+          return false;
+        }
+        const res = await this.api('PUT', '/api/branding', {
+          displayName,
+          description: document.getElementById('brandDesc').value.trim(),
+          version: document.getElementById('brandVersion').value.trim(),
+          title: document.getElementById('brandTitle').value.trim(),
+          colorPalette: this.selectedPalette,
+          executable: document.getElementById('executable').value.trim(),
+          outputName: document.getElementById('outputName').value.trim(),
+        });
+        if (!res.ok) {
+          this.showAlert('branding-alert', res.error, 'error');
+          return false;
+        }
+        this.clearAlert('branding-alert');
+        return true;
+      },
+
+      // -- Step 2: Server --
+      keyMode: 'path',
+
+      setKeyMode(mode) {
+        this.keyMode = mode;
+        document.querySelectorAll('[data-keymode]').forEach(b => {
+          b.classList.toggle('active', b.dataset.keymode === mode);
+        });
+        document.getElementById('keyModePath').classList.toggle('hidden', mode !== 'path');
+        document.getElementById('keyModeBrowse').classList.toggle('hidden', mode !== 'browse');
+        document.getElementById('keyModePaste').classList.toggle('hidden', mode !== 'paste');
+      },
+
+      setServerMode(mode) {
+        this.serverMode = mode;
+        document.querySelectorAll('.mode-btn').forEach(b => {
+          b.classList.toggle('active', b.dataset.mode === mode);
+        });
+        document.getElementById('localConfig').classList.toggle('hidden', mode !== 'local');
+        document.getElementById('sshConfig').classList.toggle('hidden', mode !== 'ssh');
+      },
+
+      async saveServer() {
+        // If key was pasted but not yet saved, save it now
+        if (this.keyMode === 'paste' && document.getElementById('sshKeyContent').value.trim()) {
+          await this.saveSSHKeyPasted();
+        }
+        const port = this.serverMode === 'ssh'
+          ? document.getElementById('sshServerPort').value
+          : document.getElementById('serverPort').value;
+        const data = {
+          mode: this.serverMode,
+          port,
+          filesDir: document.getElementById('filesDir').value,
+          sshHost: document.getElementById('sshHost').value.trim(),
+          sshUser: document.getElementById('sshUser').value.trim(),
+          sshPort: document.getElementById('sshPort').value,
+          sshKeyPath: document.getElementById('sshKeyPath').value.trim(),
+          sshPassword: document.getElementById('sshPassword').value,
+          sshRemoteDir: document.getElementById('sshRemoteDir').value.trim(),
+        };
+        const res = await this.api('POST', '/api/server/setup', data);
+        if (!res.ok) {
+          this.showAlert('server-alert', res.error, 'error');
+          return false;
+        }
+        this.clearAlert('server-alert');
+        return true;
+      },
+
+      async startLocalServer() {
+        const btn = document.getElementById('startServerBtn');
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner"></span> Starting...';
+        const statusEl = document.getElementById('localServerStatus');
+
+        // Save config first
+        await this.api('POST', '/api/server/setup', {
+          mode: 'local',
+          port: document.getElementById('serverPort').value,
+        });
+
+        const res = await this.api('POST', '/api/server/start');
+        btn.disabled = false;
+        if (res.ok) {
+          btn.innerHTML = 'Restart Server';
+          this.serverStarted = true;
+          statusEl.innerHTML = '<div class="server-status running"><span class="status-dot"></span> Server running at ' + (res.data?.url || 'http://localhost:' + document.getElementById('serverPort').value) + '</div>';
+        } else {
+          btn.innerHTML = 'Start Server';
+          statusEl.innerHTML = '<div class="server-status stopped"><span class="status-dot"></span> ' + (res.error || 'Failed to start') + '</div>';
+        }
+      },
+
+      async testSSH() {
+        const statusEl = document.getElementById('sshStatus');
+        statusEl.innerHTML = '<div class="server-status pending"><span class="status-dot"></span> <span class="spinner"></span> Testing SSH connection...</div>';
+
+        // Save first
+        await this.saveServer();
+        const res = await this.api('POST', '/api/server/test-ssh');
+        if (res.ok) {
+          statusEl.innerHTML = '<div class="server-status running"><span class="status-dot"></span> SSH connection successful</div>';
+        } else {
+          statusEl.innerHTML = '<div class="server-status stopped"><span class="status-dot"></span> ' + (res.error || 'SSH connection failed') + '</div>';
+        }
+      },
+
+      async deploySSH() {
+        const btn = document.getElementById('deployBtn');
+        const statusEl = document.getElementById('sshStatus');
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner"></span> Deploying...';
+        statusEl.innerHTML = '<div class="server-status pending"><span class="status-dot"></span> Building and deploying server...</div>';
+
+        await this.saveServer();
+        const res = await this.api('POST', '/api/server/deploy');
+        btn.disabled = false;
+        btn.innerHTML = 'Deploy &amp; Start Server';
+        if (res.ok) {
+          this.serverStarted = true;
+          statusEl.innerHTML = '<div class="server-status running"><span class="status-dot"></span> Server deployed and running on remote host</div>';
+        } else {
+          statusEl.innerHTML = '<div class="server-status stopped"><span class="status-dot"></span> ' + (res.error || 'Deployment failed') + '</div>';
+        }
+      },
+
+      // -- Step 3: Test --
+      async testConnection() {
+        const btn = document.getElementById('testBtn');
+        const result = document.getElementById('testResult');
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner"></span> Testing...';
+        result.className = 'test-result';
+        result.style.display = 'none';
+
+        const res = await this.api('POST', '/api/test');
+        btn.disabled = false;
+        btn.innerHTML = 'Test Connection';
+
+        if (res.ok) {
+          const data = res.data || {};
+          let info = 'Connection successful!';
+          if (data.totalSize !== undefined) {
+            info += ' — Server reports ' + this.formatBytes(data.totalSize) + ' of files.';
+          }
+          result.className = 'test-result success';
+          result.textContent = info;
+          result.style.display = 'block';
+        } else {
+          result.className = 'test-result error';
+          result.textContent = res.error || 'Connection failed';
+          result.style.display = 'block';
+        }
+      },
+
+      // -- Step 4: Build --
+      async startBuild() {
+        const checked = document.querySelectorAll('input[name="platform"]:checked');
+        const platforms = Array.from(checked).map(c => c.value);
+        if (!platforms.length) {
+          this.showAlert('build-alert', 'Select at least one platform', 'error');
+          return;
+        }
+        this.clearAlert('build-alert');
+
+        const btn = document.getElementById('buildBtn');
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner"></span> Building...';
+        document.getElementById('buildOutput').classList.remove('hidden');
+        document.getElementById('buildLog').textContent = 'Starting build...\n';
+        document.getElementById('buildFiles').innerHTML = '';
+
+        const res = await this.api('POST', '/api/build', { platforms });
+        if (!res.ok) {
+          btn.disabled = false;
+          btn.innerHTML = 'Build';
+          this.showAlert('build-alert', res.error, 'error');
+          return;
+        }
+
+        this.pollBuild();
+      },
+
+      async pollBuild() {
+        const res = await this.api('GET', '/api/build/status');
+        if (!res.ok) return;
+        const data = res.data || {};
+        document.getElementById('buildLog').textContent = data.log || '';
+        const logEl = document.getElementById('buildLog');
+        logEl.scrollTop = logEl.scrollHeight;
+
+        if (data.done) {
+          const btn = document.getElementById('buildBtn');
+          btn.disabled = false;
+          if (data.error) {
+            btn.innerHTML = 'Retry Build';
+            this.showAlert('build-alert', 'Build failed: ' + data.error, 'error');
+          } else {
+            btn.innerHTML = 'Rebuild';
+            this.buildComplete = true;
+            if (data.files && data.files.length) {
+              const filesEl = document.getElementById('buildFiles');
+              filesEl.innerHTML = '<div class="section-title" style="margin-top:16px">Built Files</div>';
+              data.files.forEach(f => {
+                filesEl.innerHTML += '<div class="build-file"><span class="file-name">' + f.name + '</span><span class="file-size">' + this.formatBytes(f.size) + '</span></div>';
+              });
+            }
+          }
+        } else {
+          setTimeout(() => this.pollBuild(), 1500);
+        }
+      },
+
+      // -- Utilities --
+      async api(method, url, body) {
+        try {
+          const opts = { method, headers: {} };
+          if (body && method !== 'GET') {
+            opts.headers['Content-Type'] = 'application/json';
+            opts.body = JSON.stringify(body);
+          }
+          const response = await fetch(url, opts);
+          return await response.json();
+        } catch (err) {
+          return { ok: false, error: err.message };
+        }
+      },
+
+      showAlert(id, msg, type) {
+        const el = document.getElementById(id);
+        if (el) {
+          el.innerHTML = '<div class="alert alert-' + type + '">' + this.escapeHtml(msg) + '</div>';
+        }
+      },
+
+      clearAlert(id) {
+        const el = document.getElementById(id);
+        if (el) el.innerHTML = '';
+      },
+
+      escapeHtml(str) {
+        const div = document.createElement('div');
+        div.textContent = str;
+        return div.innerHTML;
+      },
+
+      formatBytes(bytes) {
+        if (!bytes) return '0 B';
+        const units = ['B', 'KB', 'MB', 'GB'];
+        let i = 0;
+        let b = bytes;
+        while (b >= 1024 && i < units.length - 1) { b /= 1024; i++; }
+        return b.toFixed(i > 0 ? 1 : 0) + ' ' + units[i];
+      },
+    };
+
+    wizard.init();
+  </script>
+</body>
+</html>

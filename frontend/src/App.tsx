@@ -200,11 +200,16 @@ function App() {
       setProgress(() => normalizedProgress);
     });
 
+    EventsOn("versionUpdate", (newVersion: string) => {
+      setConfig((prev) => ({ ...prev, version: newVersion }));
+    });
+
     EventsEmit("ready");
 
     return () => {
       EventsOff("downloadStatus");
       EventsOff("downloadProgress");
+      EventsOff("versionUpdate");
     };
   }, []);
 

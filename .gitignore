@@ -1,4 +1,19 @@
 build/bin
 node_modules
 frontend/dist
+
+# Compiled binaries
+server/server
+webapp/ppatcher-webapp
+
+# Production secrets — never commit these
+webapp/.env.prod
+webapp/.env
+
+# Let's Encrypt certificates and challenge files
+certbot/conf/
+certbot/www/
+
+# Wails build artifacts
+webapp-builds/
 dev.sh

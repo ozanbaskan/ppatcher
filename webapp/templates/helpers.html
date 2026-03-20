@@ -1,0 +1,169 @@
+{{define "head"}}
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" type="image/x-icon" href="/static/favicon.ico">
+{{if gaID}}
+<script async src="https://www.googletagmanager.com/gtag/js?id={{gaID}}"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','{{gaID}}');</script>
+{{end}}
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = {
+    theme: {
+        extend: {
+            colors: {
+                brand: {
+                    50:  '#eff6ff', 100: '#dbeafe', 200: '#bfdbfe', 300: '#93c5fd',
+                    400: '#60a5fa', 500: '#3b82f6', 600: '#2563eb', 700: '#1d4ed8',
+                    800: '#1e40af', 900: '#1e3a8a', 950: '#172554',
+                }
+            }
+        }
+    }
+}
+</script>
+{{end}}
+
+{{define "nav"}}
+<nav class="fixed top-0 inset-x-0 z-50 border-b border-gray-800/60 bg-gray-950/80 backdrop-blur-xl">
+    <div class="max-w-6xl mx-auto flex items-center justify-between px-4 sm:px-6 h-16">
+        <a href="/" class="flex items-center gap-2.5">
+            <img src="/static/logo.jpeg" alt="PPatcher" class="w-8 h-8 rounded-lg object-cover">
+            <span class="text-lg font-bold text-white">PPatcher</span>
+        </a>
+        <div class="flex items-center gap-4">
+            {{if .User}}
+                <a href="/dashboard" class="text-sm text-gray-400 hover:text-white transition">Dashboard</a>
+                <div class="flex items-center gap-3">
+                    {{if .User.AvatarURL}}
+                        <img src="{{.User.AvatarURL}}" alt="" class="w-8 h-8 rounded-full">
+                    {{end}}
+                    <form method="POST" action="/auth/logout" class="inline">
+                        <button type="submit" class="text-sm text-gray-400 hover:text-white transition">Sign out</button>
+                    </form>
+                </div>
+            {{else}}
+                <a href="/auth/google"
+                   class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg
+                          bg-white text-gray-900 hover:bg-gray-100 transition shadow-lg shadow-white/5">
+                    {{template "google-icon"}}
+                    Sign in
+                </a>
+            {{end}}
+        </div>
+    </div>
+</nav>
+{{if .User}}
+<!-- Persistent build banner (visible on all pages) -->
+<div id="buildBanner" class="hidden fixed bottom-4 right-4 z-50 w-80 bg-gray-900 border border-gray-700 rounded-2xl shadow-xl p-4">
+    <div class="flex items-center justify-between mb-2">
+        <span class="text-xs font-semibold text-gray-300" id="buildBannerTitle">Building...</span>
+        <button type="button" class="text-gray-500 hover:text-gray-300 text-xs hidden" id="buildBannerDismiss" onclick="document.getElementById('buildBanner').classList.add('hidden')">&times; Close</button>
+    </div>
+    <div class="w-full bg-gray-800 rounded-full h-1.5 overflow-hidden mb-1">
+        <div id="buildBannerBar" class="h-full bg-brand-500 rounded-full transition-all duration-300 animate-pulse" style="width: 100%"></div>
+    </div>
+    <p id="buildBannerDetail" class="text-xs text-gray-500"></p>
+</div>
+<script>
+(function(){
+    // Don't poll on the build page itself — it has its own UI.
+    if (window.location.pathname.match(/\/apps\/\d+\/build$/)) return;
+
+    let dismissed = false;
+    let lastAppId = null;
+
+    function pollBuild() {
+        if (dismissed) return;
+        fetch('/api/build-status').then(r => r.json()).then(data => {
+            const banner = document.getElementById('buildBanner');
+            if (!banner) return;
+            const title = document.getElementById('buildBannerTitle');
+            const bar = document.getElementById('buildBannerBar');
+            const detail = document.getElementById('buildBannerDetail');
+            const dismiss = document.getElementById('buildBannerDismiss');
+
+            if (data.building) {
+                lastAppId = data.app_id;
+                banner.classList.remove('hidden');
+                title.textContent = 'Building ' + (data.app_name || 'client') + '…';
+                bar.className = bar.className.replace('bg-emerald-500','bg-brand-500').replace('bg-red-500','bg-brand-500');
+                bar.classList.add('animate-pulse');
+                bar.style.width = '100%';
+                detail.innerHTML = '<a href="/apps/' + data.app_id + '/build" class="text-brand-400 hover:text-brand-300">View build &rarr;</a>';
+                dismiss.classList.add('hidden');
+                setTimeout(pollBuild, 3000);
+            } else if (data.done) {
+                lastAppId = data.app_id;
+                banner.classList.remove('hidden');
+                bar.classList.remove('animate-pulse');
+                dismiss.classList.remove('hidden');
+                if (data.error) {
+                    title.textContent = 'Build failed';
+                    bar.className = bar.className.replace('bg-brand-500','bg-red-500');
+                    detail.innerHTML = '<a href="/apps/' + data.app_id + '/build" class="text-red-400 hover:text-red-300">View details &rarr;</a>';
+                } else {
+                    title.textContent = 'Build complete';
+                    bar.className = bar.className.replace('bg-brand-500','bg-emerald-500');
+                    bar.style.width = '100%';
+                    var count = (data.files || []).length;
+                    detail.innerHTML = count + ' file' + (count !== 1 ? 's' : '') + ' ready — <a href="/apps/' + data.app_id + '/build" class="text-emerald-400 hover:text-emerald-300">Download &rarr;</a>';
+                }
+            } else {
+                banner.classList.add('hidden');
+                setTimeout(pollBuild, 10000);
+            }
+        }).catch(() => { setTimeout(pollBuild, 10000); });
+    }
+
+    // Start polling
+    setTimeout(pollBuild, 1000);
+})();
+</script>
+{{end}}
+{{end}}
+
+{{define "google-icon"}}
+<svg class="w-4 h-4" viewBox="0 0 24 24">
+    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/>
+    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+</svg>
+{{end}}
+
+{{define "feature-card"}}
+<div class="group rounded-2xl border border-gray-800 bg-gray-900/50 p-6 hover:border-gray-700 transition">
+    <div class="w-11 h-11 rounded-xl bg-brand-600/10 border border-brand-600/20 flex items-center justify-center mb-4 text-brand-400 group-hover:bg-brand-600/20 transition">
+        {{if eq .icon "palette"}}
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"/></svg>
+        {{else if eq .icon "server"}}
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2m-2-4h.01M17 16h.01"/></svg>
+        {{else if eq .icon "bolt"}}
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+        {{else if eq .icon "shield"}}
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+        {{else if eq .icon "devices"}}
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+        {{else if eq .icon "zap"}}
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg>
+        {{end}}
+    </div>
+    <h3 class="text-base font-semibold mb-1">{{.title}}</h3>
+    <p class="text-sm text-gray-400 leading-relaxed">{{.desc}}</p>
+</div>
+{{end}}
+
+{{define "palette-dot"}}
+{{if eq . "neutral"}}
+    <span class="w-3 h-3 rounded-full bg-gray-400 inline-block" title="Neutral"></span>
+{{else if eq . "blue"}}
+    <span class="w-3 h-3 rounded-full bg-blue-500 inline-block" title="Blue"></span>
+{{else if eq . "green"}}
+    <span class="w-3 h-3 rounded-full bg-emerald-500 inline-block" title="Green"></span>
+{{else if eq . "purple"}}
+    <span class="w-3 h-3 rounded-full bg-purple-500 inline-block" title="Purple"></span>
+{{else}}
+    <span class="w-3 h-3 rounded-full bg-blue-500 inline-block" title="{{.}}"></span>
+{{end}}
+{{end}}

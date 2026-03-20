@@ -277,6 +277,8 @@ check_prerequisites() {
     if ! command -v wails &> /dev/null; then
         print_error "Wails CLI not found!"
         print_info "Please install wails with: go install github.com/wailsapp/wails/v2/cmd/wails@latest"
+        print_info "Make sure \$(go env GOPATH)/bin is in your PATH:"
+        print_info "  export PATH=\"\$PATH:\$(go env GOPATH)/bin\""
         exit 1
     fi
     
@@ -292,6 +294,32 @@ check_prerequisites() {
         print_error "npm not found!"
         print_info "Please install Node.js and npm from: https://nodejs.org/"
         exit 1
+    fi
+    
+    # Check for Linux system libraries
+    if [[ "$(uname -s)" == "Linux" ]]; then
+        local missing_deps=()
+        
+        if ! pkg-config --exists gtk+-3.0 2>/dev/null; then
+            missing_deps+=("libgtk-3-dev")
+        fi
+        
+        if ! pkg-config --exists webkit2gtk-4.1 2>/dev/null && ! pkg-config --exists webkit2gtk-4.0 2>/dev/null; then
+            missing_deps+=("libwebkit2gtk-4.1-dev (or libwebkit2gtk-4.0-dev)")
+        fi
+        
+        if ! command -v pkg-config &> /dev/null; then
+            missing_deps+=("pkg-config")
+        fi
+        
+        if [[ ${#missing_deps[@]} -gt 0 ]]; then
+            print_error "Missing Linux system libraries:"
+            for dep in "${missing_deps[@]}"; do
+                print_error "  - $dep"
+            done
+            print_info "Install with: sudo apt install -y libgtk-3-dev libwebkit2gtk-4.1-dev pkg-config"
+            exit 1
+        fi
     fi
     
     print_success "All prerequisites are met"
@@ -412,6 +440,12 @@ build_platform() {
     
     # Build wails command
     local wails_cmd="wails build"
+    
+    # Auto-detect webkit2gtk-4.1 and add build tag on Linux
+    if [[ "$(uname -s)" == "Linux" ]] && pkg-config --exists webkit2gtk-4.1 2>/dev/null; then
+        wails_cmd="$wails_cmd -tags webkit2_41"
+        print_info "Detected webkit2gtk-4.1, using webkit2_41 build tag"
+    fi
     
     if [[ "$clean" == "true" ]]; then
         wails_cmd="$wails_cmd --clean"
@@ -559,6 +593,12 @@ if [[ ! -f "$CONFIG_FILE" ]]; then
     print_error "Config file not found: $CONFIG_FILE"
     print_info "Create one with: $0 --create-config=$CONFIG_FILE"
     exit 1
+fi
+
+# Clean snap environment variables that interfere with GTK/WebKit on Linux
+# (common when running from VS Code installed as a snap)
+if [[ "$(uname -s)" == "Linux" ]]; then
+    unset GTK_PATH GTK_EXE_PREFIX LOCPATH GTK_IM_MODULE_FILE GSETTINGS_SCHEMA_DIR GIO_MODULE_DIR 2>/dev/null
 fi
 
 # Main build process

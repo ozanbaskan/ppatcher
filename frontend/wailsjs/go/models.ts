@@ -2,6 +2,7 @@ export namespace main {
 	
 	export class Config {
 	    backend: string;
+	    fallbackUrls: string[];
 	    executable: string;
 	    colorPalette: string;
 	    mode: string;
@@ -19,6 +20,7 @@ export namespace main {
 	    constructor(source: any = {}) {
 	        if ('string' === typeof source) source = JSON.parse(source);
 	        this.backend = source["backend"];
+	        this.fallbackUrls = source["fallbackUrls"];
 	        this.executable = source["executable"];
 	        this.colorPalette = source["colorPalette"];
 	        this.mode = source["mode"];

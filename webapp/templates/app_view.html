@@ -1,0 +1,567 @@
+{{define "app_view.html"}}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {{template "head"}}
+    <title>{{.App.Name}} — PPatcher</title>
+    <meta name="robots" content="noindex, nofollow">
+</head>
+<body class="bg-gray-950 text-gray-100 antialiased min-h-screen">
+
+    {{template "nav" .}}
+
+    <main class="max-w-4xl mx-auto px-4 sm:px-6 pt-24 pb-16">
+        <a href="/dashboard" class="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-gray-300 transition mb-6">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+            </svg>
+            Dashboard
+        </a>
+
+        <!-- App header -->
+        <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-8">
+            <div class="flex items-center gap-3">
+                {{template "palette-dot" .App.ColorPalette}}
+                <h1 class="text-2xl sm:text-3xl font-extrabold">{{.App.Name}}</h1>
+            </div>
+            <div class="flex items-center gap-2">
+                <a href="/apps/{{.App.ID}}/edit"
+                   class="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium rounded-xl
+                          border border-gray-700 text-gray-300 hover:border-gray-600 hover:text-white transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                    </svg>
+                    Edit
+                </a>
+                <form method="POST" action="/apps/{{.App.ID}}/delete"
+                      onsubmit="return confirm('Delete this application? This cannot be undone.')">
+                    <button type="submit"
+                            class="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium rounded-xl
+                                   border border-gray-700 text-red-400 hover:border-red-500/50 hover:bg-red-500/10 transition">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                        </svg>
+                        Delete
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        {{if .App.Description}}
+        <p class="text-gray-400 mb-8 max-w-2xl">{{.App.Description}}</p>
+        {{end}}
+
+        <!-- Info cards -->
+        <div class="grid sm:grid-cols-2 gap-4 mb-8">
+            <!-- Server -->
+            <div class="rounded-2xl border border-gray-800 bg-gray-900/50 p-5">
+                <h3 class="text-sm font-medium text-gray-400 mb-3 flex items-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2"/>
+                    </svg>
+                    {{if eq .App.ServerMode "ssh"}}Remote Server (SSH){{else}}Local Server{{end}}
+                </h3>
+                <div class="space-y-2">
+                    {{if eq .App.ServerMode "ssh"}}
+                    <div class="flex justify-between text-sm">
+                        <span class="text-gray-500">Host</span>
+                        <span class="font-mono text-gray-200">{{if .App.ServerHost}}{{.App.ServerHost}}{{else}}<span class="text-gray-600">—</span>{{end}}</span>
+                    </div>
+                    <div class="flex justify-between text-sm">
+                        <span class="text-gray-500">User</span>
+                        <span class="font-mono text-gray-200">{{if .App.ServerUser}}{{.App.ServerUser}}{{else}}<span class="text-gray-600">—</span>{{end}}</span>
+                    </div>
+                    <div class="flex justify-between text-sm">
+                        <span class="text-gray-500">SSH Port</span>
+                        <span class="font-mono text-gray-200">{{.App.SSHPort}}</span>
+                    </div>
+                    <div class="flex justify-between text-sm">
+                        <span class="text-gray-500">Remote Dir</span>
+                        <span class="font-mono text-gray-200">{{if .App.SSHRemoteDir}}{{.App.SSHRemoteDir}}{{else}}<span class="text-gray-600">—</span>{{end}}</span>
+                    </div>
+                    {{else}}
+                    <div class="flex justify-between text-sm">
+                        <span class="text-gray-500">Port</span>
+                        <span class="font-mono text-gray-200">{{.App.ServerPort}}</span>
+                    </div>
+                    {{end}}
+                    <div class="flex justify-between text-sm">
+                        <span class="text-gray-500">Backend URL</span>
+                        <span class="font-mono text-gray-200 text-right max-w-[200px] truncate">{{if .App.BackendURL}}{{.App.BackendURL}}{{else}}<span class="text-gray-600">—</span>{{end}}</span>
+                    </div>
+                </div>
+                <!-- Test Connection Button -->
+                <div class="mt-4 pt-3 border-t border-gray-800">
+                    <button class="inline-flex items-center gap-2 px-3 py-1.5 text-xs font-medium rounded-lg
+                                   border border-gray-700 text-gray-400 hover:border-gray-600 hover:text-white transition"
+                            id="testBtn" onclick="testConnection()">
+                        <span class="w-2 h-2 rounded-full bg-gray-600" id="testDot"></span>
+                        Test Connection
+                    </button>
+                    <span id="testStatus" class="text-xs text-gray-500 ml-2"></span>
+                </div>
+            </div>
+
+            <!-- Configuration -->
+            <div class="rounded-2xl border border-gray-800 bg-gray-900/50 p-5">
+                <h3 class="text-sm font-medium text-gray-400 mb-3 flex items-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                    </svg>
+                    Configuration
+                </h3>
+                <div class="space-y-2">
+                    <div class="flex justify-between text-sm">
+                        <span class="text-gray-500">Palette</span>
+                        <span class="flex items-center gap-1.5">
+                            {{template "palette-dot" .App.ColorPalette}}
+                            <span class="text-gray-200 capitalize">{{.App.ColorPalette}}</span>
+                        </span>
+                    </div>
+                    <div class="flex justify-between text-sm">
+                        <span class="text-gray-500">Version</span>
+                        <span class="flex items-center gap-2" id="versionDisplay">
+                            <span class="font-mono text-gray-200" id="versionText">{{.App.Version}}</span>
+                            <button onclick="editVersion()" class="text-gray-600 hover:text-gray-300 transition" title="Edit version">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                          d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
+                                </svg>
+                            </button>
+                        </span>
+                        <span class="hidden items-center gap-2" id="versionEdit">
+                            <input type="text" id="versionInput" value="{{.App.Version}}"
+                                   class="w-24 px-2 py-0.5 text-sm font-mono rounded-lg bg-gray-900 border border-gray-700 text-gray-100
+                                          focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition"
+                                   onkeydown="if(event.key==='Enter')saveVersion();if(event.key==='Escape')cancelVersion()">
+                            <button onclick="saveVersion()" class="text-emerald-400 hover:text-emerald-300 transition" title="Save">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                </svg>
+                            </button>
+                            <button onclick="cancelVersion()" class="text-gray-500 hover:text-gray-300 transition" title="Cancel">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                </svg>
+                            </button>
+                        </span>
+                    </div>
+                    {{if .App.DisplayName}}
+                    <div class="flex justify-between text-sm">
+                        <span class="text-gray-500">Display Name</span>
+                        <span class="text-gray-200">{{.App.DisplayName}}</span>
+                    </div>
+                    {{end}}
+                    {{if .App.Executable}}
+                    <div class="flex justify-between text-sm">
+                        <span class="text-gray-500">Executable</span>
+                        <span class="font-mono text-gray-200">{{.App.Executable}}</span>
+                    </div>
+                    {{end}}
+                    {{if .App.OutputName}}
+                    <div class="flex justify-between text-sm">
+                        <span class="text-gray-500">Output Name</span>
+                        <span class="font-mono text-gray-200">{{.App.OutputName}}</span>
+                    </div>
+                    {{end}}
+                    <div class="flex justify-between text-sm">
+                        <span class="text-gray-500">Created</span>
+                        <span class="text-gray-200">{{.App.CreatedAt.Format "Jan 2, 2006"}}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick actions -->
+        <div class="rounded-2xl border border-gray-800 bg-gray-900/50 p-5">
+            <h3 class="text-sm font-medium text-gray-400 mb-3">Actions</h3>
+            <div class="grid sm:grid-cols-3 gap-3">
+                {{if eq .App.ServerMode "ssh"}}
+                <button onclick="deploySSH()" id="deployBtn"
+                   class="flex items-start gap-3 p-3 rounded-xl bg-gray-800/30 hover:bg-gray-800/50 transition group text-left">
+                    <div class="w-8 h-8 rounded-lg bg-emerald-600/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <div class="text-sm font-medium group-hover:text-white transition">Deploy Server</div>
+                        <div class="text-xs text-gray-500">Build & deploy to SSH host.</div>
+                    </div>
+                </button>
+                {{else}}
+                <button onclick="startServer()" id="startServerBtn"
+                   class="flex items-start gap-3 p-3 rounded-xl bg-gray-800/30 hover:bg-gray-800/50 transition group text-left">
+                    <div class="w-8 h-8 rounded-lg bg-emerald-600/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <div class="text-sm font-medium group-hover:text-white transition">Start Server</div>
+                        <div class="text-xs text-gray-500">Run file server locally.</div>
+                    </div>
+                </button>
+                {{end}}
+                <a href="/apps/{{.App.ID}}/build"
+                   class="flex items-start gap-3 p-3 rounded-xl bg-gray-800/30 hover:bg-gray-800/50 transition group">
+                    <div class="w-8 h-8 rounded-lg bg-brand-600/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <svg class="w-4 h-4 text-brand-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <div class="text-sm font-medium group-hover:text-white transition">Build Patcher</div>
+                        <div class="text-xs text-gray-500">Compile client binaries.</div>
+                    </div>
+                </a>
+                <a href="/apps/{{.App.ID}}/edit"
+                   class="flex items-start gap-3 p-3 rounded-xl bg-gray-800/30 hover:bg-gray-800/50 transition group">
+                    <div class="w-8 h-8 rounded-lg bg-brand-600/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <svg class="w-4 h-4 text-brand-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <div class="text-sm font-medium group-hover:text-white transition">Configuration</div>
+                        <div class="text-xs text-gray-500">Edit app settings.</div>
+                    </div>
+                </a>
+                <button onclick="toggleFileUpload()" id="updateFilesBtn"
+                   class="flex items-start gap-3 p-3 rounded-xl bg-gray-800/30 hover:bg-gray-800/50 transition group text-left">
+                    <div class="w-8 h-8 rounded-lg bg-amber-600/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <svg class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <div class="text-sm font-medium group-hover:text-white transition">Update Files</div>
+                        <div class="text-xs text-gray-500">Upload new files to server.</div>
+                    </div>
+                </button>
+            </div>
+            <div id="actionStatus" class="mt-3"></div>
+
+            <!-- File Upload Zone (hidden by default) -->
+            <div id="fileUploadZone" class="hidden mt-4 pt-4 border-t border-gray-800">
+                <div class="flex items-center justify-between mb-3">
+                    <h4 class="text-sm font-medium text-gray-300">Upload Files</h4>
+                    <button onclick="toggleFileUpload()" class="text-gray-500 hover:text-gray-300 text-xs">&times; Close</button>
+                </div>
+                <p class="text-xs text-gray-500 mb-3">Upload a .zip archive to update the files on your server.</p>
+                <div class="border-2 border-dashed border-gray-700 rounded-xl p-6 text-center cursor-pointer hover:border-gray-600 transition"
+                     id="viewFilesDropZone">
+                    <input type="file" id="viewFilesInput" class="hidden" accept=".zip">
+                    <svg class="w-8 h-8 mx-auto mb-2 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+                    </svg>
+                    <p class="text-sm text-gray-400" id="viewFilesDropLabel">Click or drag & drop a .zip file</p>
+                </div>
+                <div id="viewUploadProgress" class="hidden mt-3">
+                    <div class="flex items-center justify-between text-xs text-gray-400 mb-1">
+                        <span id="viewUploadFileName"></span>
+                        <span id="viewUploadPercent">0%</span>
+                    </div>
+                    <div class="w-full bg-gray-800 rounded-full h-2 overflow-hidden">
+                        <div id="viewUploadBar" class="h-full bg-brand-500 rounded-full transition-all duration-300" style="width: 0%"></div>
+                    </div>
+                    <p id="viewUploadSpeed" class="text-xs text-gray-500 mt-1"></p>
+                </div>
+                <div id="viewUploadStatus" class="mt-2"></div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+    const APP_ID = {{.App.ID}};
+    let adminKey = '';
+    const backendUrl = '{{.App.BackendURL}}';
+
+    // ---------- Version Editing ----------
+    function editVersion() {
+        document.getElementById('versionDisplay').classList.add('hidden');
+        const edit = document.getElementById('versionEdit');
+        edit.classList.remove('hidden');
+        edit.classList.add('flex');
+        const input = document.getElementById('versionInput');
+        input.focus();
+        input.select();
+    }
+
+    function cancelVersion() {
+        document.getElementById('versionEdit').classList.add('hidden');
+        document.getElementById('versionEdit').classList.remove('flex');
+        document.getElementById('versionDisplay').classList.remove('hidden');
+        document.getElementById('versionInput').value = document.getElementById('versionText').textContent;
+    }
+
+    async function saveVersion() {
+        const version = document.getElementById('versionInput').value.trim();
+        if (!version) return;
+        try {
+            const res = await fetch('/apps/' + APP_ID + '/version', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ version: version })
+            });
+            const data = await res.json();
+            if (data.ok) {
+                document.getElementById('versionText').textContent = version;
+                cancelVersion();
+                // Push new version to the live file server so running clients pick it up.
+                if (backendUrl) {
+                    const key = await getAdminKey();
+                    if (key) {
+                        fetch(backendUrl + '/admin/version', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': 'Basic ' + btoa('admin:' + key)
+                            },
+                            body: JSON.stringify({ version: version }),
+                            mode: 'cors'
+                        }).catch(() => {});
+                    }
+                }
+            } else {
+                alert(data.error || 'Failed to update version');
+            }
+        } catch (err) {
+            alert(err.message);
+        }
+    }
+
+    // ---------- File Upload ----------
+    function toggleFileUpload() {
+        const zone = document.getElementById('fileUploadZone');
+        zone.classList.toggle('hidden');
+    }
+
+    async function getAdminKey() {
+        if (adminKey) return adminKey;
+        try {
+            const res = await fetch('/apps/' + APP_ID + '/admin-key');
+            const data = await res.json();
+            if (data.ok) {
+                adminKey = data.data.admin_key;
+                return adminKey;
+            }
+        } catch (_) {}
+        return '';
+    }
+
+    const viewDropZone = document.getElementById('viewFilesDropZone');
+    const viewFilesInput = document.getElementById('viewFilesInput');
+
+    viewDropZone.addEventListener('click', () => viewFilesInput.click());
+    viewDropZone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        viewDropZone.classList.add('border-brand-500', 'bg-brand-500/5');
+    });
+    viewDropZone.addEventListener('dragleave', () => {
+        viewDropZone.classList.remove('border-brand-500', 'bg-brand-500/5');
+    });
+    viewDropZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        viewDropZone.classList.remove('border-brand-500', 'bg-brand-500/5');
+        if (e.dataTransfer.files.length) handleViewFileUpload(e.dataTransfer.files[0]);
+    });
+    viewFilesInput.addEventListener('change', (e) => {
+        if (e.target.files.length) handleViewFileUpload(e.target.files[0]);
+    });
+
+    async function handleViewFileUpload(file) {
+        const ext = file.name.split('.').pop().toLowerCase();
+        if (ext !== 'zip') {
+            document.getElementById('viewUploadStatus').innerHTML = '<p class="text-sm text-red-400">Only .zip files are supported.</p>';
+            return;
+        }
+        if (!backendUrl) {
+            document.getElementById('viewUploadStatus').innerHTML = '<p class="text-sm text-red-400">No backend URL configured. Deploy the server first.</p>';
+            return;
+        }
+
+        const key = await getAdminKey();
+        if (!key) {
+            document.getElementById('viewUploadStatus').innerHTML = '<p class="text-sm text-red-400">No admin key available. Deploy the server first.</p>';
+            return;
+        }
+
+        const authHeader = 'Basic ' + btoa('admin:' + key);
+        const statusEl = document.getElementById('viewUploadStatus');
+        const progressDiv = document.getElementById('viewUploadProgress');
+        const bar = document.getElementById('viewUploadBar');
+        const percentEl = document.getElementById('viewUploadPercent');
+        const speedEl = document.getElementById('viewUploadSpeed');
+        const fileNameEl = document.getElementById('viewUploadFileName');
+
+        // Check disk space
+        statusEl.innerHTML = '<p class="text-sm text-gray-400">Checking server disk space...</p>';
+        try {
+            const spaceCtrl = new AbortController();
+            const spaceTimeout = setTimeout(() => spaceCtrl.abort(), 15000);
+            const spaceRes = await fetch(backendUrl + '/admin/check-space?need=' + file.size, {
+                headers: { 'Authorization': authHeader },
+                signal: spaceCtrl.signal,
+                mode: 'cors'
+            });
+            clearTimeout(spaceTimeout);
+            const spaceData = await spaceRes.json();
+            if (spaceData.error) {
+                statusEl.innerHTML = '<p class="text-sm text-red-400">Disk space check failed: ' + esc(spaceData.error) + '</p>';
+                return;
+            }
+            if (!spaceData.enough) {
+                statusEl.innerHTML = '<p class="text-sm text-red-400">Not enough disk space on server.</p>';
+                return;
+            }
+        } catch (err) {
+            const msg = err.name === 'AbortError'
+                ? 'Request timed out — make sure the server is reachable.'
+                : err.message;
+            statusEl.innerHTML = '<p class="text-sm text-red-400">Could not reach server: ' + esc(msg) + '</p>';
+            return;
+        }
+
+        statusEl.innerHTML = '';
+        progressDiv.classList.remove('hidden');
+        bar.style.width = '0%';
+        bar.className = bar.className.replace('bg-emerald-500', 'bg-brand-500').replace('bg-red-500', 'bg-brand-500');
+        percentEl.textContent = '0%';
+        fileNameEl.textContent = file.name + ' (' + formatBytes(file.size) + ')';
+        speedEl.textContent = '';
+
+        const formData = new FormData();
+        formData.append('file', file);
+
+        const xhr = new XMLHttpRequest();
+        const startTime = Date.now();
+
+        xhr.upload.addEventListener('progress', (e) => {
+            if (e.lengthComputable) {
+                const pct = Math.round((e.loaded / e.total) * 100);
+                bar.style.width = pct + '%';
+                percentEl.textContent = pct + '%';
+                const elapsed = (Date.now() - startTime) / 1000;
+                if (elapsed > 0.5) {
+                    const speed = e.loaded / elapsed;
+                    const remaining = (e.total - e.loaded) / speed;
+                    speedEl.textContent = formatBytes(Math.round(speed)) + '/s — ' +
+                        (remaining < 60 ? Math.round(remaining) + 's remaining' : Math.round(remaining / 60) + 'min remaining');
+                }
+            }
+        });
+
+        xhr.addEventListener('load', () => {
+            try {
+                const data = JSON.parse(xhr.responseText);
+                if (data.ok) {
+                    bar.style.width = '100%';
+                    bar.className = bar.className.replace('bg-brand-500', 'bg-emerald-500');
+                    percentEl.textContent = '100%';
+                    speedEl.textContent = '';
+                    statusEl.innerHTML = '<p class="text-sm text-emerald-400 flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-emerald-400"></span> ' +
+                        data.files + ' files extracted (' + formatBytes(data.totalSize) + ')</p>';
+                } else {
+                    bar.className = bar.className.replace('bg-brand-500', 'bg-red-500');
+                    statusEl.innerHTML = '<p class="text-sm text-red-400">' + esc(data.error) + '</p>';
+                }
+            } catch (e) {
+                statusEl.innerHTML = '<p class="text-sm text-red-400">Upload failed: invalid response</p>';
+            }
+        });
+
+        xhr.addEventListener('error', () => {
+            bar.className = bar.className.replace('bg-brand-500', 'bg-red-500');
+            statusEl.innerHTML = '<p class="text-sm text-red-400">Upload failed: network error</p>';
+        });
+
+        xhr.open('POST', backendUrl + '/admin/upload');
+        xhr.setRequestHeader('Authorization', authHeader);
+        xhr.send(formData);
+    }
+
+    // ---------- Test Connection ----------
+    async function testConnection() {
+        const btn = document.getElementById('testBtn');
+        const dot = document.getElementById('testDot');
+        const status = document.getElementById('testStatus');
+        dot.className = 'w-2 h-2 rounded-full bg-amber-400 animate-pulse';
+        status.textContent = 'Testing...';
+        try {
+            const res = await fetch('/apps/' + APP_ID + '/test', { method: 'POST' });
+            const data = await res.json();
+            if (data.ok) {
+                dot.className = 'w-2 h-2 rounded-full bg-emerald-400';
+                status.textContent = 'Connected';
+                status.className = 'text-xs text-emerald-400 ml-2';
+            } else {
+                dot.className = 'w-2 h-2 rounded-full bg-red-400';
+                status.textContent = data.error || 'Failed';
+                status.className = 'text-xs text-red-400 ml-2';
+            }
+        } catch (err) {
+            dot.className = 'w-2 h-2 rounded-full bg-red-400';
+            status.textContent = err.message;
+            status.className = 'text-xs text-red-400 ml-2';
+        }
+    }
+
+    async function deploySSH() {
+        const btn = document.getElementById('deployBtn');
+        const el = document.getElementById('actionStatus');
+        btn.disabled = true;
+        el.innerHTML = '<p class="text-sm text-gray-400 flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span> Deploying server...</p>';
+        try {
+            const res = await fetch('/apps/' + APP_ID + '/deploy', { method: 'POST' });
+            const data = await res.json();
+            btn.disabled = false;
+            if (data.ok) {
+                el.innerHTML = '<p class="text-sm text-emerald-400 flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-emerald-400"></span> Server deployed and running</p>';
+            } else {
+                el.innerHTML = '<p class="text-sm text-red-400 flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-red-400"></span> ' + esc(data.error) + '</p>';
+            }
+        } catch (err) {
+            btn.disabled = false;
+            el.innerHTML = '<p class="text-sm text-red-400">' + esc(err.message) + '</p>';
+        }
+    }
+
+    async function startServer() {
+        const btn = document.getElementById('startServerBtn');
+        const el = document.getElementById('actionStatus');
+        btn.disabled = true;
+        el.innerHTML = '<p class="text-sm text-gray-400 flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span> Starting server...</p>';
+        try {
+            const res = await fetch('/apps/' + APP_ID + '/server/start', { method: 'POST' });
+            const data = await res.json();
+            btn.disabled = false;
+            if (data.ok) {
+                el.innerHTML = '<p class="text-sm text-emerald-400 flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-emerald-400"></span> Server running at ' + esc(data.data?.url || '') + '</p>';
+            } else {
+                el.innerHTML = '<p class="text-sm text-red-400 flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-red-400"></span> ' + esc(data.error) + '</p>';
+            }
+        } catch (err) {
+            btn.disabled = false;
+            el.innerHTML = '<p class="text-sm text-red-400">' + esc(err.message) + '</p>';
+        }
+    }
+
+    function esc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+    function formatBytes(b) {
+        if (b < 1024) return b + ' B';
+        if (b < 1048576) return (b / 1024).toFixed(1) + ' KB';
+        return (b / 1048576).toFixed(1) + ' MB';
+    }
+    </script>
+
+</body>
+</html>
+{{end}}

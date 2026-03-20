@@ -88,8 +88,9 @@ func InitConfig() {
 }
 
 type Config struct {
-	Backend      string `json:"backend"`
-	Executable   string `json:"executable"`
+	Backend      string   `json:"backend"`
+	FallbackURLs []string `json:"fallbackUrls"`
+	Executable   string   `json:"executable"`
 	ColorPalette string `json:"colorPalette"`
 	Mode         string `json:"mode"`
 	Version      string `json:"version"`

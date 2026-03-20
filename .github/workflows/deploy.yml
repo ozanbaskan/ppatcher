@@ -1,0 +1,35 @@
+name: Deploy to Production
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    name: Deploy to Oracle VPS
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          port: 22
+          script: |
+            set -e
+
+            cd /opt/ppatcher
+
+            echo "Pulling latest code..."
+            git pull origin main
+
+            echo "Rebuilding and restarting webapp..."
+            docker compose -f docker-compose.prod.yml up --build -d webapp
+
+            echo "Cleaning up old images..."
+            docker image prune -f
+
+            echo "Deploy complete."

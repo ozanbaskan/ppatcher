@@ -1,10 +1,13 @@
 {
-  "backend": "http://192.168.1.103:3000",
+  "backend": "http://localhost:3000",
+  "colorPalette": "blue",
+  "description": "",
+  "displayName": "PPatcher",
   "executable": "",
-  "colorPalette": "neutral",
+  "icon": "",
+  "logo": "",
   "mode": "production",
-  "description": "Keep your files up to date",
-  "displayName": "Test Game",
-  "title": "ppatcher test client",
-  "outputName": "ppatcher-test"
+  "outputName": "ppatcher",
+  "title": "PPatcher",
+  "version": "1.0.0"
 }

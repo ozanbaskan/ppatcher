@@ -1,0 +1,304 @@
+{{define "build.html"}}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {{template "head"}}
+    <title>Build — {{.App.Name}} — PPatcher</title>
+    <meta name="robots" content="noindex, nofollow">
+</head>
+<body class="bg-gray-950 text-gray-100 antialiased min-h-screen">
+
+    {{template "nav" .}}
+
+    <main class="max-w-3xl mx-auto px-4 sm:px-6 pt-24 pb-16">
+        <a href="/apps/{{.App.ID}}" class="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-gray-300 transition mb-6">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+            </svg>
+            {{.App.Name}}
+        </a>
+
+        <div class="flex items-center gap-3 mb-8">
+            {{template "palette-dot" .App.ColorPalette}}
+            <h1 class="text-2xl sm:text-3xl font-extrabold">Build Client</h1>
+        </div>
+
+        <!-- Build config summary -->
+        <div class="rounded-2xl border border-gray-800 bg-gray-900/50 p-5 mb-6">
+            <h3 class="text-sm font-medium text-gray-400 mb-3 flex items-center gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                </svg>
+                Build Configuration
+            </h3>
+            <div class="grid sm:grid-cols-2 gap-x-6 gap-y-2 text-sm">
+                <div class="flex justify-between">
+                    <span class="text-gray-500">Backend URL</span>
+                    <span class="font-mono text-gray-200 truncate max-w-[180px]">{{if .App.BackendURL}}{{.App.BackendURL}}{{else}}<span class="text-gray-600">—</span>{{end}}</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-500">Version</span>
+                    <span class="font-mono text-gray-200">{{.App.Version}}</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-500">Display Name</span>
+                    <span class="text-gray-200">{{if .App.DisplayName}}{{.App.DisplayName}}{{else}}{{.App.Name}}{{end}}</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-500">Output Name</span>
+                    <span class="font-mono text-gray-200">{{if .App.OutputName}}{{.App.OutputName}}{{else}}<span class="text-gray-600">auto</span>{{end}}</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-500">Executable</span>
+                    <span class="font-mono text-gray-200">{{if .App.Executable}}{{.App.Executable}}{{else}}<span class="text-gray-600">—</span>{{end}}</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-500">Palette</span>
+                    <span class="flex items-center gap-1.5">
+                        {{template "palette-dot" .App.ColorPalette}}
+                        <span class="text-gray-200 capitalize">{{.App.ColorPalette}}</span>
+                    </span>
+                </div>
+            </div>
+            <div class="mt-3 pt-3 border-t border-gray-800">
+                <a href="/apps/{{.App.ID}}/edit" class="text-xs text-brand-400 hover:text-brand-300 transition">Edit configuration &rarr;</a>
+            </div>
+        </div>
+
+        <!-- Build form -->
+        <form method="POST" action="/apps/{{.App.ID}}/build" id="buildForm"
+              class="rounded-2xl border border-gray-800 bg-gray-900/50 p-5 mb-6">
+            <h3 class="text-sm font-medium text-gray-400 mb-4">Select Platforms</h3>
+            <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-5">
+                <label class="cursor-pointer">
+                    <input type="checkbox" name="platform" value="windows/amd64" checked class="sr-only peer">
+                    <div class="flex items-center gap-2 p-3 rounded-xl border border-gray-800
+                                peer-checked:border-brand-500 peer-checked:bg-brand-500/10 hover:border-gray-700 transition">
+                        <span class="text-lg">🪟</span>
+                        <div>
+                            <div class="text-sm font-medium">Windows</div>
+                            <div class="text-xs text-gray-500">amd64</div>
+                        </div>
+                    </div>
+                </label>
+                <label class="cursor-pointer">
+                    <input type="checkbox" name="platform" value="linux/amd64" checked class="sr-only peer">
+                    <div class="flex items-center gap-2 p-3 rounded-xl border border-gray-800
+                                peer-checked:border-brand-500 peer-checked:bg-brand-500/10 hover:border-gray-700 transition">
+                        <span class="text-lg">🐧</span>
+                        <div>
+                            <div class="text-sm font-medium">Linux</div>
+                            <div class="text-xs text-gray-500">amd64</div>
+                        </div>
+                    </div>
+                </label>
+                <label class="cursor-pointer">
+                    <input type="checkbox" name="platform" value="darwin/amd64" class="sr-only peer">
+                    <div class="flex items-center gap-2 p-3 rounded-xl border border-gray-800
+                                peer-checked:border-brand-500 peer-checked:bg-brand-500/10 hover:border-gray-700 transition">
+                        <span class="text-lg">🍎</span>
+                        <div>
+                            <div class="text-sm font-medium">macOS</div>
+                            <div class="text-xs text-gray-500">amd64</div>
+                        </div>
+                    </div>
+                </label>
+                <label class="cursor-pointer">
+                    <input type="checkbox" name="platform" value="windows/arm64" class="sr-only peer">
+                    <div class="flex items-center gap-2 p-3 rounded-xl border border-gray-800
+                                peer-checked:border-brand-500 peer-checked:bg-brand-500/10 hover:border-gray-700 transition">
+                        <span class="text-lg">🪟</span>
+                        <div>
+                            <div class="text-sm font-medium">Windows</div>
+                            <div class="text-xs text-gray-500">arm64</div>
+                        </div>
+                    </div>
+                </label>
+                <label class="cursor-pointer">
+                    <input type="checkbox" name="platform" value="linux/arm64" class="sr-only peer">
+                    <div class="flex items-center gap-2 p-3 rounded-xl border border-gray-800
+                                peer-checked:border-brand-500 peer-checked:bg-brand-500/10 hover:border-gray-700 transition">
+                        <span class="text-lg">🐧</span>
+                        <div>
+                            <div class="text-sm font-medium">Linux</div>
+                            <div class="text-xs text-gray-500">arm64</div>
+                        </div>
+                    </div>
+                </label>
+                <label class="cursor-pointer">
+                    <input type="checkbox" name="platform" value="darwin/arm64" class="sr-only peer">
+                    <div class="flex items-center gap-2 p-3 rounded-xl border border-gray-800
+                                peer-checked:border-brand-500 peer-checked:bg-brand-500/10 hover:border-gray-700 transition">
+                        <span class="text-lg">🍎</span>
+                        <div>
+                            <div class="text-sm font-medium">macOS</div>
+                            <div class="text-xs text-gray-500">arm64 (Apple Silicon)</div>
+                        </div>
+                    </div>
+                </label>
+            </div>
+            <!-- Hidden field populated by JS -->
+            <input type="hidden" name="platforms" id="platformsInput">
+            <button type="submit" id="buildBtn"
+                    class="inline-flex items-center justify-center gap-2 px-6 py-2.5 text-sm font-semibold rounded-xl
+                           bg-brand-600 text-white hover:bg-brand-500 transition shadow-lg shadow-brand-600/25
+                           disabled:opacity-50 disabled:cursor-not-allowed">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                </svg>
+                <span id="buildBtnText">Build Client</span>
+            </button>
+        </form>
+
+        <!-- Build status -->
+        <div id="buildOutput" class="hidden rounded-2xl border border-gray-800 bg-gray-900/50 p-5 mb-6">
+            <!-- In-progress state -->
+            <div id="buildingState" class="hidden">
+                <div class="flex items-center gap-3">
+                    <svg class="w-5 h-5 text-brand-400 animate-spin flex-shrink-0" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                    </svg>
+                    <div>
+                        <p class="text-sm font-medium text-gray-200">Building client…</p>
+                        <p class="text-xs text-gray-500 mt-0.5">This usually takes a minute or two.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Success state -->
+            <div id="successState" class="hidden">
+                <div class="flex items-center gap-3 mb-4">
+                    <span class="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center flex-shrink-0">
+                        <svg class="w-3 h-3 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
+                        </svg>
+                    </span>
+                    <p class="text-sm font-medium text-emerald-400">Build complete</p>
+                </div>
+                <div id="downloadList" class="space-y-2"></div>
+            </div>
+
+            <!-- Error state -->
+            <div id="errorState" class="hidden">
+                <div class="flex items-start gap-3">
+                    <span class="w-5 h-5 rounded-full bg-red-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <svg class="w-3 h-3 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </span>
+                    <div>
+                        <p class="text-sm font-medium text-red-400">Build failed</p>
+                        <p id="buildErrorMsg" class="text-xs text-gray-500 mt-0.5"></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+    const appId = {{.App.ID}};
+    let polling = false;
+
+    document.getElementById('buildForm').addEventListener('submit', function(e) {
+        const checked = document.querySelectorAll('input[name="platform"]:checked');
+        if (checked.length === 0) {
+            e.preventDefault();
+            alert('Select at least one platform.');
+            return;
+        }
+        const platforms = Array.from(checked).map(c => c.value).join(',');
+        document.getElementById('platformsInput').value = platforms;
+        document.getElementById('buildBtn').disabled = true;
+        document.getElementById('buildBtnText').textContent = 'Building...';
+        // Start polling after the form redirect reloads the page (handled by {{.Building}} below)
+    });
+
+    function showBuilding() {
+        document.getElementById('buildOutput').classList.remove('hidden');
+        document.getElementById('buildingState').classList.remove('hidden');
+        document.getElementById('successState').classList.add('hidden');
+        document.getElementById('errorState').classList.add('hidden');
+        document.getElementById('buildBtn').disabled = true;
+        document.getElementById('buildBtnText').textContent = 'Building...';
+    }
+
+    function showSuccess(files) {
+        document.getElementById('buildOutput').classList.remove('hidden');
+        document.getElementById('buildingState').classList.add('hidden');
+        document.getElementById('errorState').classList.add('hidden');
+        document.getElementById('successState').classList.remove('hidden');
+        document.getElementById('buildBtn').disabled = false;
+        document.getElementById('buildBtnText').textContent = 'Build Client';
+
+        if (files && files.length > 0) {
+            const dl = document.getElementById('downloadList');
+            dl.innerHTML = '';
+            files.forEach(f => {
+                const sizeMB = (f.size / 1024 / 1024).toFixed(1);
+                dl.innerHTML += `
+                    <a href="/apps/${appId}/build/download/${encodeURIComponent(f.name)}"
+                       class="flex items-center justify-between p-3 rounded-xl bg-gray-800/30 hover:bg-gray-800/50 transition group">
+                        <div class="flex items-center gap-3">
+                            <svg class="w-5 h-5 text-brand-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                            </svg>
+                            <span class="text-sm font-mono">${f.name}</span>
+                        </div>
+                        <span class="text-xs text-gray-500">${sizeMB} MB</span>
+                    </a>`;
+            });
+        }
+    }
+
+    function showError(msg) {
+        document.getElementById('buildOutput').classList.remove('hidden');
+        document.getElementById('buildingState').classList.add('hidden');
+        document.getElementById('successState').classList.add('hidden');
+        document.getElementById('errorState').classList.remove('hidden');
+        document.getElementById('buildErrorMsg').textContent = msg || 'An unexpected error occurred.';
+        document.getElementById('buildBtn').disabled = false;
+        document.getElementById('buildBtnText').textContent = 'Build Client';
+    }
+
+    function pollStatus() {
+        if (!polling) return;
+        fetch('/apps/' + appId + '/build/status')
+            .then(r => r.json())
+            .then(data => {
+                if (data.done) {
+                    polling = false;
+                    if (data.error) {
+                        showError(data.error);
+                    } else {
+                        showSuccess(data.files);
+                    }
+                } else {
+                    setTimeout(pollStatus, 2000);
+                }
+            })
+            .catch(() => { setTimeout(pollStatus, 3000); });
+    }
+
+    {{if .Building}}
+    showBuilding();
+    polling = true;
+    pollStatus();
+    {{else if .Done}}
+    {{if .Error}}
+    showError({{.Error | js}});
+    {{else}}
+    showSuccess({{range .Files}}{{end}});
+    // Reload files via status so we don't have to template them
+    fetch('/apps/' + appId + '/build/status')
+        .then(r => r.json())
+        .then(data => { if (data.files) showSuccess(data.files); });
+    {{end}}
+    {{end}}
+    </script>
+
+</body>
+</html>
+{{end}}

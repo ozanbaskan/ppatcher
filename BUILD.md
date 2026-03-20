@@ -19,14 +19,43 @@ Before building, ensure you have the following installed:
 1. **Go** (version 1.24 or later) - [Download](https://golang.org/dl/)
 2. **Node.js and npm** (version 20.x LTS or later) - [Download](https://nodejs.org/)
 3. **Wails CLI** - Install with: `go install github.com/wailsapp/wails/v2/cmd/wails@latest`
+4. **Linux system libraries** (Linux only):
+   - `libgtk-3-dev`
+   - `libwebkit2gtk-4.1-dev` (Ubuntu 24.04+) or `libwebkit2gtk-4.0-dev` (older distros)
+   - `pkg-config`
+
+> **PATH setup:** The `go install` command places binaries in `$(go env GOPATH)/bin` (typically `~/go/bin`). Make sure this directory is in your `PATH`:
+> ```bash
+> # Add to your ~/.bashrc or ~/.zshrc
+> export PATH="$PATH:$(go env GOPATH)/bin"
+> ```
+
+> **Ubuntu 24.04+ note:** Ubuntu 24.04 and newer ship `libwebkit2gtk-4.1` instead of `4.0`. Wails builds require the `webkit2_41` build tag on these systems. See the [Build Tags](#build-tags) section below.
 
 ### Quick Prerequisites Setup
 
+**Linux (Ubuntu/Debian):**
+
 ```bash
+# Install system dependencies
+sudo apt install -y libgtk-3-dev libwebkit2gtk-4.1-dev pkg-config
+
 # Install Wails CLI
 go install github.com/wailsapp/wails/v2/cmd/wails@latest
 
+# Ensure Go bin is in PATH
+export PATH="$PATH:$(go env GOPATH)/bin"
+
 # Install frontend dependencies (run from project root)
+cd frontend && npm install && cd ..
+```
+
+**Linux (Fedora/RHEL):**
+
+```bash
+sudo dnf install -y gtk3-devel webkit2gtk4.1-devel pkg-config
+go install github.com/wailsapp/wails/v2/cmd/wails@latest
+export PATH="$PATH:$(go env GOPATH)/bin"
 cd frontend && npm install && cd ..
 ```
 
@@ -289,9 +318,29 @@ wails build --platform windows/amd64 --o my-patcher-windows-amd64.exe
 # Build for Linux 64-bit
 wails build --platform linux/amd64 --o my-patcher-linux-amd64
 
+# Build for Linux on Ubuntu 24.04+ (webkit2gtk-4.1)
+wails build -tags webkit2_41 --platform linux/amd64 --o my-patcher-linux-amd64
+
 # Clean build
 wails build --clean --platform windows/amd64 --o my-patcher-windows-amd64.exe
+
+# Development mode
+wails dev -tags webkit2_41
 ```
+
+### Build Tags
+
+| Tag           | When to use                                                              |
+| ------------- | ------------------------------------------------------------------------ |
+| `webkit2_41`  | Required on Ubuntu 24.04+ and other distros shipping webkit2gtk-4.1      |
+
+You can check which webkit2gtk version is available on your system:
+
+```bash
+pkg-config --modversion webkit2gtk-4.1 2>/dev/null && echo "Use -tags webkit2_41" || echo "Using default webkit2gtk-4.0"
+```
+
+> **Note:** `wails doctor` may report `libwebkit: Not Found` on Ubuntu 24.04+ — this is a cosmetic false positive. As long as `pkg-config --cflags webkit2gtk-4.1` succeeds and you pass `-tags webkit2_41`, builds will work correctly.
 
 ## Supported Platforms
 
@@ -643,27 +692,66 @@ During the build process:
 
 1. **"wails command not found"**
 
+   The `go install` command places binaries in `$(go env GOPATH)/bin`. Ensure this is in your PATH:
+
    ```bash
+   # Check where wails was installed
+   ls $(go env GOPATH)/bin/wails
+
+   # Add to PATH (add this to ~/.bashrc or ~/.zshrc to make it permanent)
+   export PATH="$PATH:$(go env GOPATH)/bin"
+
+   # Reinstall if needed
    go install github.com/wailsapp/wails/v2/cmd/wails@latest
    ```
 
-2. **"npm not found"**
+2. **"Package webkit2gtk-4.0 was not found" (Ubuntu 24.04+)**
+
+   Ubuntu 24.04 and newer do not ship `webkit2gtk-4.0`. Install the 4.1 version and use the `webkit2_41` build tag:
+
+   ```bash
+   sudo apt install -y libwebkit2gtk-4.1-dev
+
+   # Build with the tag
+   wails build -tags webkit2_41
+
+   # Or dev mode
+   wails dev -tags webkit2_41
+   ```
+
+3. **"pkg-config: not found" or missing GTK/WebKit headers**
+
+   Install the required system libraries:
+
+   ```bash
+   # Ubuntu/Debian
+   sudo apt install -y libgtk-3-dev libwebkit2gtk-4.1-dev pkg-config
+
+   # Fedora/RHEL
+   sudo dnf install -y gtk3-devel webkit2gtk4.1-devel pkg-config
+   ```
+
+4. **`wails doctor` shows "libwebkit: Not Found" on Ubuntu 24.04+**
+
+   This is a known false positive. The doctor command checks for the 4.0 package name. As long as your builds succeed with `-tags webkit2_41`, this warning can be ignored.
+
+5. **"npm not found"**
 
    - Install Node.js from https://nodejs.org/
 
-3. **Frontend build fails**
+6. **Frontend build fails**
 
    ```bash
    cd frontend && npm install && cd ..
    ```
 
-4. **Permission denied on Linux/macOS**
+7. **Permission denied on Linux/macOS**
 
    ```bash
    chmod +x build-client.sh
    ```
 
-5. **Build fails with "config not found"**
+8. **Build fails with "config not found"**
    - Ensure your config file exists and is valid JSON
    - Use `--create-config` to generate a sample
 
@@ -678,7 +766,11 @@ During the build process:
 ### Custom Build Tags
 
 ```bash
-wails build --tags "production,custom" --platform windows/amd64
+# Ubuntu 24.04+ requires webkit2_41 tag for Linux builds
+wails build -tags webkit2_41 --platform linux/amd64
+
+# Multiple tags
+wails build -tags "webkit2_41,production,custom" --platform linux/amd64
 ```
 
 ### Cross-Compilation Requirements
@@ -752,7 +844,10 @@ jobs:
           node-version: "20"
 
       - name: Install dependencies
-        run: make install-deps
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.1-dev pkg-config
+          make install-deps
 
       - name: Create configuration
         run: |

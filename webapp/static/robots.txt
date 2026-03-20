@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Disallow: /dashboard
+Disallow: /apps/
+Disallow: /auth/
+Disallow: /api/
+
+Sitemap: https://ppatcher.com/sitemap.xml

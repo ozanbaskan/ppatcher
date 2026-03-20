@@ -1,0 +1,1307 @@
+{{define "app_form.html"}}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {{template "head"}}
+    <title>{{if .App.ID}}Edit{{else}}New{{end}} Application — PPatcher</title>
+    <meta name="robots" content="noindex, nofollow">
+</head>
+<body class="bg-gray-950 text-gray-100 antialiased min-h-screen">
+
+    {{template "nav" .}}
+
+    <main class="max-w-3xl mx-auto px-4 sm:px-6 pt-24 pb-16">
+        <a href="{{if .App.ID}}/apps/{{.App.ID}}{{else}}/dashboard{{end}}"
+           class="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-gray-300 transition mb-6">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+            </svg>
+            Back
+        </a>
+
+        <h1 class="text-2xl font-extrabold mb-6">{{if .App.ID}}Edit Application{{else}}Setup Wizard{{end}}</h1>
+
+        <!-- Step Indicators -->
+        <div class="flex items-center justify-center gap-0 mb-8" id="stepsBar">
+            <div class="step-ind flex flex-col items-center gap-1.5 min-w-[72px] cursor-pointer" data-step="0">
+                <div class="step-dot w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold border-2 border-brand-500 bg-brand-600 text-white transition">1</div>
+                <span class="step-lbl text-xs font-semibold text-brand-400 transition">Project</span>
+            </div>
+            <div class="step-line w-10 h-0.5 bg-gray-800 mb-5 transition"></div>
+            <div class="step-ind flex flex-col items-center gap-1.5 min-w-[72px] cursor-pointer" data-step="1">
+                <div class="step-dot w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold border-2 border-gray-700 bg-gray-900 text-gray-500 transition">2</div>
+                <span class="step-lbl text-xs font-medium text-gray-500 transition">Branding</span>
+            </div>
+            <div class="step-line w-10 h-0.5 bg-gray-800 mb-5 transition"></div>
+            <div class="step-ind flex flex-col items-center gap-1.5 min-w-[72px] cursor-pointer" data-step="2">
+                <div class="step-dot w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold border-2 border-gray-700 bg-gray-900 text-gray-500 transition">3</div>
+                <span class="step-lbl text-xs font-medium text-gray-500 transition">Server</span>
+            </div>
+            <div class="step-line w-10 h-0.5 bg-gray-800 mb-5 transition"></div>
+            <div class="step-ind flex flex-col items-center gap-1.5 min-w-[72px] cursor-pointer" data-step="3">
+                <div class="step-dot w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold border-2 border-gray-700 bg-gray-900 text-gray-500 transition">4</div>
+                <span class="step-lbl text-xs font-medium text-gray-500 transition">Test</span>
+            </div>
+            <div class="step-line w-10 h-0.5 bg-gray-800 mb-5 transition"></div>
+            <div class="step-ind flex flex-col items-center gap-1.5 min-w-[72px] cursor-pointer" data-step="4">
+                <div class="step-dot w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold border-2 border-gray-700 bg-gray-900 text-gray-500 transition">5</div>
+                <span class="step-lbl text-xs font-medium text-gray-500 transition">Build</span>
+            </div>
+            <div class="step-line w-10 h-0.5 bg-gray-800 mb-5 transition"></div>
+            <div class="step-ind flex flex-col items-center gap-1.5 min-w-[72px] cursor-pointer" data-step="5">
+                <div class="step-dot w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold border-2 border-gray-700 bg-gray-900 text-gray-500 transition">6</div>
+                <span class="step-lbl text-xs font-medium text-gray-500 transition">Done</span>
+            </div>
+        </div>
+
+        <form method="POST" action="{{if .App.ID}}/apps/{{.App.ID}}/edit{{else}}/apps/new{{end}}" id="wizardForm">
+
+            <!-- Step 0: Project -->
+            <div class="wizard-step" data-step="0">
+                <div class="rounded-2xl border border-gray-800 bg-gray-900/50 p-6">
+                    <h2 class="text-lg font-bold mb-1">Create Your Project</h2>
+                    <p class="text-sm text-gray-500 mb-6">Give your patcher application a name and description.</p>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium mb-1.5" for="name">Application Name <span class="text-red-400">*</span></label>
+                            <input type="text" id="name" name="name" value="{{.App.Name}}" required
+                                   class="w-full px-4 py-2.5 rounded-xl bg-gray-900 border border-gray-800 text-gray-100
+                                          placeholder-gray-600 focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition"
+                                   placeholder="my-game">
+                            {{if index .Errors "name"}}
+                            <p class="text-red-400 text-xs mt-1">{{index .Errors "name"}}</p>
+                            {{end}}
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-1.5" for="description">Description</label>
+                            <textarea id="description" name="description" rows="3"
+                                      class="w-full px-4 py-2.5 rounded-xl bg-gray-900 border border-gray-800 text-gray-100
+                                             placeholder-gray-600 focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition resize-none"
+                                      placeholder="Keep your files up to date">{{.App.Description}}</textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 1: Branding -->
+            <div class="wizard-step hidden" data-step="1">
+                <div class="rounded-2xl border border-gray-800 bg-gray-900/50 p-6">
+                    <h2 class="text-lg font-bold mb-1">Customize Your Client</h2>
+                    <p class="text-sm text-gray-500 mb-6">Set how your patcher will look and feel.</p>
+                    <div class="space-y-4">
+                        <div class="grid sm:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium mb-1.5" for="display_name">Display Name</label>
+                                <input type="text" id="display_name" name="display_name" value="{{.App.DisplayName}}"
+                                       class="w-full px-4 py-2.5 rounded-xl bg-gray-900 border border-gray-800 text-gray-100
+                                              placeholder-gray-600 focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition"
+                                       placeholder="My Game">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium mb-1.5" for="title">Window Title</label>
+                                <input type="text" id="title" name="title" value="{{.App.Title}}"
+                                       class="w-full px-4 py-2.5 rounded-xl bg-gray-900 border border-gray-800 text-gray-100
+                                              placeholder-gray-600 focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition"
+                                       placeholder="My Game Patcher">
+                            </div>
+                        </div>
+                        <div class="grid sm:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium mb-1.5" for="version">Version</label>
+                                <input type="text" id="version" name="version" value="{{.App.Version}}"
+                                       class="w-full px-4 py-2.5 rounded-xl bg-gray-900 border border-gray-800 text-gray-100
+                                              placeholder-gray-600 focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition"
+                                       placeholder="1.0.0">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium mb-1.5" for="output_name">Output Binary Name</label>
+                                <input type="text" id="output_name" name="output_name" value="{{.App.OutputName}}"
+                                       class="w-full px-4 py-2.5 rounded-xl bg-gray-900 border border-gray-800 text-gray-100
+                                              placeholder-gray-600 focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition"
+                                       placeholder="my-game-patcher">
+                                <p class="text-xs text-gray-600 mt-1">Name of the compiled binary.</p>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-1.5" for="executable">Executable to Launch</label>
+                            <input type="text" id="executable" name="executable" value="{{.App.Executable}}"
+                                   class="w-full px-4 py-2.5 rounded-xl bg-gray-900 border border-gray-800 text-gray-100
+                                          placeholder-gray-600 focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition"
+                                   placeholder="game.exe (optional)">
+                            <p class="text-xs text-gray-600 mt-1">File to run when user clicks "Start". Leave empty if not needed.</p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-1.5" for="client_description">Client Description</label>
+                            <textarea id="client_description" name="client_description" rows="2"
+                                      class="w-full px-4 py-2.5 rounded-xl bg-gray-900 border border-gray-800 text-gray-100
+                                             placeholder-gray-600 focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition resize-none"
+                                      placeholder="Keep your game up to date">{{.App.ClientDescription}}</textarea>
+                            <p class="text-xs text-gray-600 mt-1">Short text shown below the title in the patcher window.</p>
+                        </div>
+                        <!-- Color Palette -->
+                        <div>
+                            <label class="block text-sm font-medium mb-2">Color Palette</label>
+                            <div class="flex flex-wrap gap-3">
+                                <label class="cursor-pointer">
+                                    <input type="radio" name="color_palette" value="neutral" class="sr-only peer" {{if eq .App.ColorPalette "neutral"}}checked{{end}}>
+                                    <div class="flex items-center gap-2 px-3 py-2 rounded-lg border border-gray-800
+                                                peer-checked:border-brand-500 peer-checked:bg-brand-500/10 hover:border-gray-700 transition">
+                                        <span class="w-4 h-4 rounded-full bg-gray-400"></span>
+                                        <span class="text-sm">Neutral</span>
+                                    </div>
+                                </label>
+                                <label class="cursor-pointer">
+                                    <input type="radio" name="color_palette" value="blue" class="sr-only peer" {{if eq .App.ColorPalette "blue"}}checked{{end}}>
+                                    <div class="flex items-center gap-2 px-3 py-2 rounded-lg border border-gray-800
+                                                peer-checked:border-brand-500 peer-checked:bg-brand-500/10 hover:border-gray-700 transition">
+                                        <span class="w-4 h-4 rounded-full bg-blue-500"></span>
+                                        <span class="text-sm">Blue</span>
+                                    </div>
+                                </label>
+                                <label class="cursor-pointer">
+                                    <input type="radio" name="color_palette" value="green" class="sr-only peer" {{if eq .App.ColorPalette "green"}}checked{{end}}>
+                                    <div class="flex items-center gap-2 px-3 py-2 rounded-lg border border-gray-800
+                                                peer-checked:border-brand-500 peer-checked:bg-brand-500/10 hover:border-gray-700 transition">
+                                        <span class="w-4 h-4 rounded-full bg-emerald-500"></span>
+                                        <span class="text-sm">Green</span>
+                                    </div>
+                                </label>
+                                <label class="cursor-pointer">
+                                    <input type="radio" name="color_palette" value="purple" class="sr-only peer" {{if eq .App.ColorPalette "purple"}}checked{{end}}>
+                                    <div class="flex items-center gap-2 px-3 py-2 rounded-lg border border-gray-800
+                                                peer-checked:border-brand-500 peer-checked:bg-brand-500/10 hover:border-gray-700 transition">
+                                        <span class="w-4 h-4 rounded-full bg-purple-500"></span>
+                                        <span class="text-sm">Purple</span>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="grid sm:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium mb-1.5" for="logoFileInput">Logo Image</label>
+                                <input type="hidden" id="logo_path" name="logo_path" value="">
+                                <div class="border-2 border-dashed border-gray-700 rounded-xl p-4 text-center cursor-pointer hover:border-gray-600 transition"
+                                     id="logoDropZone">
+                                    <input type="file" id="logoFileInput" class="hidden" accept="image/*">
+                                    <p class="text-sm text-gray-400" id="logoDropLabel">Click to upload logo</p>
+                                    <p class="text-xs text-gray-600 mt-1">Target: 250KB max. Larger files are auto-shrunk.</p>
+                                </div>
+                                <div id="logoUploadStatus" class="mt-2"></div>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium mb-1.5" for="iconFileInput">App Icon</label>
+                                <input type="hidden" id="icon_path" name="icon_path" value="">
+                                <div class="border-2 border-dashed border-gray-700 rounded-xl p-4 text-center cursor-pointer hover:border-gray-600 transition"
+                                     id="iconDropZone">
+                                    <input type="file" id="iconFileInput" class="hidden" accept="image/*">
+                                    <p class="text-sm text-gray-400" id="iconDropLabel">Click to upload icon</p>
+                                    <p class="text-xs text-gray-600 mt-1">Target: 125KB max. Larger files are auto-shrunk.</p>
+                                </div>
+                                <div id="iconUploadStatus" class="mt-2"></div>
+                            </div>
+                        </div>
+
+                        <div class="rounded-2xl border border-gray-800 bg-gray-950/80 p-4 mt-2">
+                            <p class="text-xs text-gray-500 mb-3">Client Preview</p>
+                            <!-- Outer frame mimics a desktop window -->
+                            <div id="clientPreview" class="rounded-xl overflow-hidden transition" style="background: linear-gradient(135deg, #ebf8ff 0%, #bee3f8 100%); font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;">
+                                <div style="display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:20px;min-height:380px;box-sizing:border-box;">
+                                    <!-- Content area -->
+                                    <div style="display:flex;flex-direction:column;align-items:center;width:100%;flex:1;justify-content:center;gap:20px;">
+                                        <!-- Header -->
+                                        <div style="text-align:center;">
+                                            <h3 id="previewDisplayName" style="font-size:1.75rem;font-weight:700;margin:0 0 6px 0;letter-spacing:-0.5px;color:#2a4365;">{{if .App.DisplayName}}{{.App.DisplayName}}{{else}}PPatcher{{end}}</h3>
+                                            <p id="previewSubtitle" style="font-size:0.85rem;margin:0;font-weight:400;color:#4c51bf;">{{if .App.ClientDescription}}{{.App.ClientDescription}}{{else}}&nbsp;{{end}}</p>
+                                        </div>
+                                        <!-- Logo card -->
+                                        <div id="previewLogoCard" style="padding:12px;border-radius:12px;background-color:#ffffff;box-shadow:0 4px 12px rgba(0,0,0,0.05);">
+                                            <img id="previewLogo" src="{{if .App.LogoPath}}/apps/{{.App.ID}}/assets/logo{{end}}" alt="Logo preview"
+                                                 style="border-radius:8px;display:block;height:140px;width:auto;max-width:260px;object-fit:contain;">
+                                        </div>
+                                        <!-- Status -->
+                                        <div style="display:flex;flex-direction:column;align-items:center;min-height:40px;justify-content:center;gap:6px;">
+                                            <span id="previewStatus" style="font-size:0.9rem;font-weight:500;color:#6b7280;">Checking for updates...</span>
+                                        </div>
+                                        <!-- Progress bar -->
+                                        <div style="display:flex;justify-content:center;width:100%;">
+                                            <div id="previewProgressTrack" style="height:14px;border-radius:7px;overflow:hidden;width:80%;max-width:360px;background-color:#e6fffa;">
+                                                <div id="previewProgress" style="height:100%;border-radius:7px;width:40%;transition:width 0.3s ease;background-color:#3182ce;"></div>
+                                            </div>
+                                        </div>
+                                        <!-- Buttons -->
+                                        <div style="display:flex;gap:12px;width:100%;max-width:280px;justify-content:center;" id="previewButtons">
+                                            <button type="button" id="previewStartBtn"
+                                                style="display:none;padding:10px 18px;border-radius:8px;border:none;font-size:0.85rem;font-weight:500;color:white;flex:1;min-width:100px;box-shadow:0 2px 6px rgba(0,0,0,0.1);cursor:default;background-color:#3182ce;">Start</button>
+                                            <button type="button" id="previewUpdateBtn"
+                                                style="padding:10px 18px;border-radius:8px;border:none;font-size:0.85rem;font-weight:500;color:white;flex:1;min-width:100px;box-shadow:0 2px 6px rgba(0,0,0,0.1);cursor:default;background-color:#3182ce;">Check for Updates</button>
+                                        </div>
+                                    </div>
+                                    <!-- Footer -->
+                                    <div style="padding:10px 0 0 0;">
+                                        <p id="previewVersion" style="font-size:0.7rem;margin:0;color:#4c51bf;">Version {{if .App.Version}}{{.App.Version}}{{else}}1.0.0{{end}}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 2: Server -->
+            <div class="wizard-step hidden" data-step="2">
+                <div class="rounded-2xl border border-gray-800 bg-gray-900/50 p-6">
+                    <h2 class="text-lg font-bold mb-1">Server Setup</h2>
+                    <p class="text-sm text-gray-500 mb-6">Configure where the file server will run. The patcher client connects to this server for updates.</p>
+
+                    <input type="hidden" name="server_mode" id="server_mode" value="ssh">
+                    <input type="hidden" name="server_port" id="server_port" value="{{.App.ServerPort}}">
+
+                    <!-- SSH Config -->
+                    <div id="sshConfig" class="space-y-4">
+                        <div class="grid sm:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium mb-1.5" for="server_host">SSH Host <span class="text-red-400">*</span></label>
+                                <input type="text" id="server_host" name="server_host" value="{{.App.ServerHost}}"
+                                       class="w-full px-4 py-2.5 rounded-xl bg-gray-900 border border-gray-800 text-gray-100
+                                              placeholder-gray-600 focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition"
+                                       placeholder="192.168.1.100 or server.example.com">
+                                {{if index .Errors "server_host"}}
+                                <p class="text-red-400 text-xs mt-1">{{index .Errors "server_host"}}</p>
+                                {{end}}
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium mb-1.5" for="ssh_port">SSH Port</label>
+                                <input type="text" id="ssh_port" name="ssh_port" value="{{.App.SSHPort}}"
+                                       class="w-full px-4 py-2.5 rounded-xl bg-gray-900 border border-gray-800 text-gray-100
+                                              placeholder-gray-600 focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition"
+                                       placeholder="22">
+                            </div>
+                        </div>
+                        <div class="grid sm:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium mb-1.5" for="server_user">SSH Username <span class="text-red-400">*</span></label>
+                                <input type="text" id="server_user" name="server_user" value="{{.App.ServerUser}}"
+                                       class="w-full px-4 py-2.5 rounded-xl bg-gray-900 border border-gray-800 text-gray-100
+                                              placeholder-gray-600 focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition"
+                                       placeholder="admin">
+                                {{if index .Errors "server_user"}}
+                                <p class="text-red-400 text-xs mt-1">{{index .Errors "server_user"}}</p>
+                                {{end}}
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium mb-1.5" for="ssh_password">SSH Password <span class="text-xs text-gray-500">(optional)</span></label>
+                                <input type="password" id="ssh_password" name="ssh_password" value="{{.App.SSHPassword}}"
+                                       class="w-full px-4 py-2.5 rounded-xl bg-gray-900 border border-gray-800 text-gray-100
+                                              placeholder-gray-600 focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition"
+                                       placeholder="Used if key not provided" autocomplete="off">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-2">SSH Key <span class="text-xs text-gray-500">(optional)</span></label>
+                            <div class="flex gap-2 mb-3">
+                                <button type="button" class="keymode-btn px-3 py-1.5 text-xs font-medium rounded-lg border transition"
+                                        data-keymode="path" onclick="setKeyMode('path')">File Path</button>
+                                <button type="button" class="keymode-btn px-3 py-1.5 text-xs font-medium rounded-lg border transition"
+                                        data-keymode="browse" onclick="setKeyMode('browse')">Browse</button>
+                                <button type="button" class="keymode-btn px-3 py-1.5 text-xs font-medium rounded-lg border transition"
+                                        data-keymode="paste" onclick="setKeyMode('paste')">Paste Key</button>
+                            </div>
+                            <div id="keyModePath">
+                                <input type="text" id="ssh_key_path" name="ssh_key_path" value="{{if and .App.SSHKeyPath (not (hasPrefix .App.SSHKeyPath "/"))}}{{.App.SSHKeyPath}}{{end}}"
+                                       class="w-full px-4 py-2.5 rounded-xl bg-gray-900 border border-gray-800 text-gray-100
+                                              placeholder-gray-600 focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition"
+                                       placeholder="~/.ssh/id_rsa">
+                                {{if and .App.SSHKeyPath (hasPrefix .App.SSHKeyPath "/")}}
+                                <p class="text-xs text-emerald-400 mt-1">SSH key uploaded ✔</p>
+                                {{end}}
+                            </div>
+                            <div id="keyModeBrowse" class="hidden">
+                                <div class="border-2 border-dashed border-gray-700 rounded-xl p-4 text-center cursor-pointer hover:border-gray-600 transition" id="sshKeyZone">
+                                    <input type="file" id="sshKeyInput" class="hidden">
+                                    <span class="text-sm text-gray-500" id="sshKeyFileName">Click to select your private key file</span>
+                                </div>
+                            </div>
+                            <div id="keyModePaste" class="hidden">
+                                <textarea id="sshKeyContent" rows="4"
+                                          class="w-full px-4 py-2.5 rounded-xl bg-gray-900 border border-gray-800 text-gray-100
+                                                 placeholder-gray-600 focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition resize-none font-mono text-xs"
+                                          placeholder="-----BEGIN OPENSSH PRIVATE KEY-----&#10;...&#10;-----END OPENSSH PRIVATE KEY-----"></textarea>
+                            </div>
+                            <div id="sshKeyStatus" class="mt-2"></div>
+                        </div>
+                        <div class="grid sm:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium mb-1.5" for="ssh_remote_dir">Remote Directory</label>
+                                <input type="text" id="ssh_remote_dir" name="ssh_remote_dir" value="{{.App.SSHRemoteDir}}"
+                                       class="w-full px-4 py-2.5 rounded-xl bg-gray-900 border border-gray-800 text-gray-100
+                                              placeholder-gray-600 focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition"
+                                       placeholder="~/ppatcher-server">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium mb-1.5">Server Port</label>
+                                <input type="text" id="ssh_server_port" value="{{.App.ServerPort}}"
+                                       class="w-full px-4 py-2.5 rounded-xl bg-gray-900 border border-gray-800 text-gray-100
+                                              placeholder-gray-600 focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition"
+                                       placeholder="3000"
+                                       onchange="document.getElementById('server_port').value = this.value">
+                            </div>
+                        </div>
+                        <div class="flex gap-3">
+                            <button type="button" class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-xl
+                                           border border-gray-700 text-gray-300 hover:border-gray-600 hover:text-white transition"
+                                    onclick="testSSH()">
+                                Test SSH Connection
+                            </button>
+                            <button type="button" class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-xl
+                                           bg-emerald-600 text-white hover:bg-emerald-500 transition"
+                                    id="deployBtn" onclick="deploySSH()">
+                                Deploy &amp; Start Server
+                            </button>
+                        </div>
+                        <div id="sshStatus"></div>
+
+                        <!-- File Upload Section -->
+                        <div class="border-t border-gray-800 pt-4 mt-2">
+                            <label class="block text-sm font-medium mb-2">Upload Files <span class="text-xs text-gray-500">(.zip)</span></label>
+                            <p class="text-xs text-gray-500 mb-3">Upload an archive with the files your patcher will serve. These will be deployed to the server.</p>
+                            <div class="border-2 border-dashed border-gray-700 rounded-xl p-6 text-center cursor-pointer hover:border-gray-600 transition"
+                                 id="filesDropZone">
+                                <input type="file" id="filesInput" class="hidden" accept=".zip">
+                                <svg class="w-8 h-8 mx-auto mb-2 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+                                </svg>
+                                <p class="text-sm text-gray-400" id="filesDropLabel">Click or drag &amp; drop a .zip file</p>
+                            </div>
+                            <!-- Upload progress -->
+                            <div id="uploadProgress" class="hidden mt-3">
+                                <div class="flex items-center justify-between text-xs text-gray-400 mb-1">
+                                    <span id="uploadFileName"></span>
+                                    <span id="uploadPercent">0%</span>
+                                </div>
+                                <div class="w-full bg-gray-800 rounded-full h-2 overflow-hidden">
+                                    <div id="uploadBar" class="h-full bg-brand-500 rounded-full transition-all duration-300" style="width: 0%"></div>
+                                </div>
+                                <p id="uploadSpeed" class="text-xs text-gray-500 mt-1"></p>
+                            </div>
+                            <div id="uploadStatus" class="mt-2"></div>
+                            <!-- Current files list -->
+                            <div id="filesList" class="mt-3"></div>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium mb-1.5" for="backend_url">Backend URL</label>
+                            <input type="text" id="backend_url" name="backend_url"
+                                   class="w-full px-4 py-2.5 rounded-xl bg-gray-900 border border-gray-800 text-gray-100
+                                          placeholder-gray-600 focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition"
+                                   placeholder="http://yourserver:3000"
+                                   value="{{.App.BackendURL}}">
+                            <p class="text-xs text-gray-600 mt-1">Auto-set after deploy, or enter manually.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 3: Test Connection -->
+            <div class="wizard-step hidden" data-step="3">
+                <div class="rounded-2xl border border-gray-800 bg-gray-900/50 p-6 text-center">
+                    <h2 class="text-lg font-bold mb-1">Test Connection</h2>
+                    <p class="text-sm text-gray-500 mb-6">Verify that the patcher client can connect to the file server.</p>
+                    <div class="rounded-xl bg-gray-900 border border-gray-800 p-4 inline-block mb-6">
+                        <div class="text-xs text-gray-500 mb-1">Server URL</div>
+                        <div class="font-mono text-sm text-gray-200" id="testUrl">—</div>
+                    </div>
+                    <div>
+                        <button type="button" class="inline-flex items-center gap-2 px-6 py-2.5 text-sm font-semibold rounded-xl
+                                       bg-brand-600 text-white hover:bg-brand-500 transition shadow-lg shadow-brand-600/25"
+                                id="testBtn" onclick="testConnection()">
+                            Test Connection
+                        </button>
+                    </div>
+                    <div id="testResult" class="mt-4"></div>
+                </div>
+            </div>
+
+            <!-- Step 4: Build -->
+            <div class="wizard-step hidden" data-step="4">
+                <div class="rounded-2xl border border-gray-800 bg-gray-900/50 p-6">
+                    <h2 class="text-lg font-bold mb-1">Build Patcher Client</h2>
+                    <p class="text-sm text-gray-500 mb-6">Select target platforms and build your custom patcher executable.</p>
+                    <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-6">
+                        <label class="cursor-pointer">
+                            <input type="checkbox" name="platform" value="linux/amd64" checked class="sr-only peer">
+                            <div class="flex items-center gap-2 p-3 rounded-xl border border-gray-800
+                                        peer-checked:border-brand-500 peer-checked:bg-brand-500/10 hover:border-gray-700 transition">
+                                <span class="text-sm font-medium">Linux x64</span>
+                            </div>
+                        </label>
+                        <label class="cursor-pointer">
+                            <input type="checkbox" name="platform" value="windows/amd64" checked class="sr-only peer">
+                            <div class="flex items-center gap-2 p-3 rounded-xl border border-gray-800
+                                        peer-checked:border-brand-500 peer-checked:bg-brand-500/10 hover:border-gray-700 transition">
+                                <span class="text-sm font-medium">Windows x64</span>
+                            </div>
+                        </label>
+                        <label class="cursor-pointer">
+                            <input type="checkbox" name="platform" value="darwin/amd64" class="sr-only peer">
+                            <div class="flex items-center gap-2 p-3 rounded-xl border border-gray-800
+                                        peer-checked:border-brand-500 peer-checked:bg-brand-500/10 hover:border-gray-700 transition">
+                                <span class="text-sm font-medium">macOS Intel</span>
+                            </div>
+                        </label>
+                        <label class="cursor-pointer">
+                            <input type="checkbox" name="platform" value="darwin/arm64" class="sr-only peer">
+                            <div class="flex items-center gap-2 p-3 rounded-xl border border-gray-800
+                                        peer-checked:border-brand-500 peer-checked:bg-brand-500/10 hover:border-gray-700 transition">
+                                <span class="text-sm font-medium">macOS ARM</span>
+                            </div>
+                        </label>
+                        <label class="cursor-pointer">
+                            <input type="checkbox" name="platform" value="linux/arm64" class="sr-only peer">
+                            <div class="flex items-center gap-2 p-3 rounded-xl border border-gray-800
+                                        peer-checked:border-brand-500 peer-checked:bg-brand-500/10 hover:border-gray-700 transition">
+                                <span class="text-sm font-medium">Linux ARM64</span>
+                            </div>
+                        </label>
+                        <label class="cursor-pointer">
+                            <input type="checkbox" name="platform" value="windows/arm64" class="sr-only peer">
+                            <div class="flex items-center gap-2 p-3 rounded-xl border border-gray-800
+                                        peer-checked:border-brand-500 peer-checked:bg-brand-500/10 hover:border-gray-700 transition">
+                                <span class="text-sm font-medium">Windows ARM</span>
+                            </div>
+                        </label>
+                    </div>
+                    <button type="button" class="inline-flex items-center gap-2 px-6 py-2.5 text-sm font-semibold rounded-xl
+                                   bg-brand-600 text-white hover:bg-brand-500 transition shadow-lg shadow-brand-600/25"
+                            id="buildBtn" onclick="startBuild()">
+                        Build
+                    </button>
+                    <div id="buildOutput" class="hidden mt-4">
+                        <pre class="bg-gray-950 border border-gray-800 rounded-xl p-4 text-xs font-mono text-gray-400 max-h-64 overflow-y-auto" id="buildLog"></pre>
+                        <div id="buildFiles" class="mt-3 space-y-2"></div>
+                    </div>
+                    <div id="build-alert"></div>
+                </div>
+            </div>
+
+            <!-- Step 5: Done / Review -->
+            <div class="wizard-step hidden" data-step="5">
+                <div class="rounded-2xl border border-gray-800 bg-gray-900/50 p-6 text-center">
+                    <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-emerald-600/20 flex items-center justify-center">
+                        <svg class="w-8 h-8 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                        </svg>
+                    </div>
+                    <h2 class="text-lg font-bold mb-1">{{if .App.ID}}Save Changes{{else}}Review & Create{{end}}</h2>
+                    <p class="text-sm text-gray-500 mb-6">Review your configuration.</p>
+                    <div class="max-w-md mx-auto text-left space-y-2" id="reviewSummary"></div>
+                    <div class="mt-6 pt-4 border-t border-gray-800">
+                        <button type="submit"
+                                class="inline-flex items-center justify-center gap-2 px-6 py-2.5 text-sm font-semibold rounded-xl
+                                       bg-brand-600 text-white hover:bg-brand-500 transition shadow-lg shadow-brand-600/25">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                            </svg>
+                            {{if .App.ID}}Save Changes{{else}}Create Application{{end}}
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </form>
+
+        <!-- Persistent upload banner (visible across all steps) -->
+        <div id="uploadBanner" class="hidden fixed bottom-4 right-4 z-50 w-80 bg-gray-900 border border-gray-700 rounded-2xl shadow-xl p-4">
+            <div class="flex items-center justify-between mb-2">
+                <span class="text-xs font-semibold text-gray-300" id="bannerTitle">Uploading...</span>
+                <button type="button" class="text-gray-500 hover:text-gray-300 text-xs" id="bannerDismiss" onclick="dismissBanner()" style="display:none">&times; Close</button>
+            </div>
+            <div class="w-full bg-gray-800 rounded-full h-1.5 overflow-hidden mb-1">
+                <div id="bannerBar" class="h-full bg-brand-500 rounded-full transition-all duration-300" style="width: 0%"></div>
+            </div>
+            <p id="bannerDetail" class="text-xs text-gray-500"></p>
+        </div>
+
+        <div class="flex justify-between gap-3 mt-6">
+            <button id="prevBtn" class="hidden inline-flex items-center gap-1.5 px-5 py-2.5 text-sm font-semibold rounded-xl
+                       border border-gray-700 text-gray-300 hover:border-gray-600 hover:text-white transition"
+                    onclick="wizardPrev()">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                </svg>
+                Back
+            </button>
+            <button id="nextBtn"
+                    class="ml-auto inline-flex items-center gap-1.5 px-5 py-2.5 text-sm font-semibold rounded-xl
+                           bg-brand-600 text-white hover:bg-brand-500 transition shadow-lg shadow-brand-600/25"
+                    onclick="wizardNext()">
+                Next
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                </svg>
+            </button>
+            <button id="verifyBtn"
+                    class="hidden ml-auto inline-flex items-center gap-1.5 px-5 py-2.5 text-sm font-semibold rounded-xl
+                           bg-emerald-600 text-white hover:bg-emerald-500 transition shadow-lg shadow-emerald-600/25"
+                    onclick="verifyBackend()">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                Verify &amp; Continue
+            </button>
+        </div>
+    </main>
+
+    <script>
+    let APP_ID = {{if .App.ID}}{{.App.ID}}{{else}}0{{end}};
+    let currentStep = 0;
+    const totalSteps = 6;
+    let backendVerified = false;
+    let deployKey = '';
+    let adminKey = '{{.App.AdminKey}}';
+    let backendUrl = '{{.App.BackendURL}}';
+
+    // Auto-save (create or update) the app, returns true on success.
+    // For new apps, creates the record and captures the ID.
+    async function ensureSaved() {
+        const form = document.getElementById('wizardForm');
+        const data = new FormData(form);
+        try {
+            const res = await fetch(form.action, {
+                method: 'POST',
+                body: data,
+                headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                redirect: 'manual'
+            });
+            const ct = res.headers.get('content-type') || '';
+            if (ct.includes('application/json')) {
+                const json = await res.json();
+                if (json.ok && json.id && !APP_ID) {
+                    APP_ID = json.id;
+                    // Switch form action from /apps/new to /apps/{id}/edit
+                    form.action = '/apps/' + APP_ID + '/edit';
+                    // Update browser URL so back/refresh works
+                    history.replaceState(null, '', '/apps/' + APP_ID + '/edit');
+                }
+                return json.ok !== false;
+            }
+            return res.ok;
+        } catch (_) {
+            return false;
+        }
+    }
+
+    async function saveForm() {
+        return ensureSaved();
+    }
+
+    function wizardGoTo(step) {
+        if (step < 0 || step >= totalSteps) return;
+        if (step > currentStep && !validateStep(currentStep)) return;
+        document.querySelectorAll('.wizard-step').forEach(el => el.classList.add('hidden'));
+        document.querySelector('.wizard-step[data-step="' + step + '"]').classList.remove('hidden');
+        currentStep = step;
+        updateIndicators();
+        updateNavButtons();
+        if (step === 3) updateTestUrl();
+        if (step === 2) onServerStepEnter();
+        if (step === 5) populateReview();
+    }
+
+    function wizardNext() { wizardGoTo(currentStep + 1); }
+    function wizardPrev() { wizardGoTo(currentStep - 1); }
+
+    function validateStep(step) {
+        if (step === 0) {
+            const name = document.getElementById('name').value.trim();
+            if (!name) { document.getElementById('name').focus(); return false; }
+        }
+        if (step === 2) {
+            const host = document.getElementById('server_host').value.trim();
+            const user = document.getElementById('server_user').value.trim();
+            if (!host) { document.getElementById('server_host').focus(); return false; }
+            if (!user) { document.getElementById('server_user').focus(); return false; }
+            if (!backendVerified) {
+                document.getElementById('sshStatus').innerHTML = '<p class="text-sm text-amber-400 flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-amber-400"></span> Please deploy the server and verify the backend URL before continuing.</p>';
+                return false;
+            }
+        }
+        return true;
+    }
+
+    function updateIndicators() {
+        document.querySelectorAll('.step-ind').forEach((el, i) => {
+            const dot = el.querySelector('.step-dot');
+            const lbl = el.querySelector('.step-lbl');
+            if (i === currentStep) {
+                dot.className = 'step-dot w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold border-2 border-brand-500 bg-brand-600 text-white transition';
+                dot.textContent = i + 1;
+                lbl.className = 'step-lbl text-xs font-semibold text-brand-400 transition';
+            } else if (i < currentStep) {
+                dot.className = 'step-dot w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold border-2 border-emerald-500 bg-emerald-600 text-white transition';
+                dot.innerHTML = '&#10003;';
+                lbl.className = 'step-lbl text-xs font-medium text-emerald-400 transition';
+            } else {
+                dot.className = 'step-dot w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold border-2 border-gray-700 bg-gray-900 text-gray-500 transition';
+                dot.textContent = i + 1;
+                lbl.className = 'step-lbl text-xs font-medium text-gray-500 transition';
+            }
+        });
+        document.querySelectorAll('.step-line').forEach((el, i) => {
+            el.className = i < currentStep
+                ? 'step-line w-10 h-0.5 bg-emerald-500 mb-5 transition'
+                : 'step-line w-10 h-0.5 bg-gray-800 mb-5 transition';
+        });
+    }
+
+    function updateNavButtons() {
+        document.getElementById('prevBtn').classList.toggle('hidden', currentStep === 0);
+        const nextBtn = document.getElementById('nextBtn');
+        const verifyBtn = document.getElementById('verifyBtn');
+        if (currentStep === 2) {
+            nextBtn.classList.add('hidden');
+            verifyBtn.classList.toggle('hidden', backendVerified);
+            if (backendVerified) nextBtn.classList.remove('hidden');
+        } else {
+            nextBtn.classList.toggle('hidden', currentStep === totalSteps - 1);
+            verifyBtn.classList.add('hidden');
+        }
+    }
+
+    document.querySelectorAll('.step-ind').forEach(el => {
+        el.addEventListener('click', () => {
+            const step = parseInt(el.dataset.step);
+            if (step <= currentStep) wizardGoTo(step);
+        });
+    });
+
+    // Server mode toggle (removed - SSH only)
+
+    // SSH key mode toggle
+    let keyMode = 'path';
+    function setKeyMode(mode) {
+        keyMode = mode;
+        document.querySelectorAll('.keymode-btn').forEach(b => {
+            const active = b.dataset.keymode === mode;
+            b.className = 'keymode-btn px-3 py-1.5 text-xs font-medium rounded-lg border transition ' +
+                (active ? 'border-brand-500 bg-brand-500/10 text-white' : 'border-gray-700 text-gray-500 hover:border-gray-600');
+        });
+        document.getElementById('keyModePath').classList.toggle('hidden', mode !== 'path');
+        document.getElementById('keyModeBrowse').classList.toggle('hidden', mode !== 'browse');
+        document.getElementById('keyModePaste').classList.toggle('hidden', mode !== 'paste');
+    }
+
+    // SSH key file browse
+    document.getElementById('sshKeyZone')?.addEventListener('click', () => document.getElementById('sshKeyInput').click());
+    document.getElementById('sshKeyInput')?.addEventListener('change', async (e) => {
+        if (!e.target.files.length) return;
+        await ensureSaved();
+        if (!APP_ID) return;
+        const formData = new FormData();
+        formData.append('file', e.target.files[0]);
+        const statusEl = document.getElementById('sshKeyStatus');
+        statusEl.innerHTML = '<p class="text-xs text-gray-400">Uploading...</p>';
+        try {
+            const res = await fetch('/apps/' + APP_ID + '/ssh-key', { method: 'POST', body: formData });
+            const data = await res.json();
+            if (data.ok) {
+                document.getElementById('sshKeyFileName').textContent = e.target.files[0].name + ' ✔';
+                statusEl.innerHTML = '<p class="text-xs text-emerald-400">Key saved</p>';
+            } else {
+                statusEl.innerHTML = '<p class="text-xs text-red-400">' + esc(data.error) + '</p>';
+            }
+        } catch (err) {
+            statusEl.innerHTML = '<p class="text-xs text-red-400">' + esc(err.message) + '</p>';
+        }
+    });
+
+    // Save pasted SSH key
+    async function savePastedKey() {
+        const content = document.getElementById('sshKeyContent')?.value;
+        if (!content?.trim()) return;
+        await ensureSaved();
+        if (!APP_ID) return;
+        const statusEl = document.getElementById('sshKeyStatus');
+        statusEl.innerHTML = '<p class="text-xs text-gray-400">Saving...</p>';
+        try {
+            const res = await fetch('/apps/' + APP_ID + '/ssh-key', {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ content: content })
+            });
+            const data = await res.json();
+            if (data.ok) {
+                statusEl.innerHTML = '<p class="text-xs text-emerald-400">Key saved</p>';
+            } else {
+                statusEl.innerHTML = '<p class="text-xs text-red-400">' + esc(data.error) + '</p>';
+            }
+        } catch (err) {
+            statusEl.innerHTML = '<p class="text-xs text-red-400">' + esc(err.message) + '</p>';
+        }
+    }
+
+    // Test SSH
+    async function testSSH() {
+        await ensureSaved();
+        if (!APP_ID) return;
+        const el = document.getElementById('sshStatus');
+        el.innerHTML = '<p class="text-sm text-gray-400 flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span> Testing SSH connection...</p>';
+        // Save pasted key if applicable
+        if (keyMode === 'paste') await savePastedKey();
+        // Save form first
+        await saveForm();
+        try {
+            const res = await fetch('/apps/' + APP_ID + '/test-ssh', { method: 'POST' });
+            const data = await res.json();
+            if (data.ok) {
+                el.innerHTML = '<p class="text-sm text-emerald-400 flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-emerald-400"></span> SSH connection successful</p>';
+            } else {
+                el.innerHTML = '<p class="text-sm text-red-400 flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-red-400"></span> ' + esc(data.error) + '</p>';
+            }
+        } catch (err) {
+            el.innerHTML = '<p class="text-sm text-red-400">' + esc(err.message) + '</p>';
+        }
+    }
+
+    // Deploy SSH
+    async function deploySSH() {
+        await ensureSaved();
+        if (!APP_ID) return;
+        const btn = document.getElementById('deployBtn');
+        const el = document.getElementById('sshStatus');
+        btn.disabled = true;
+        btn.textContent = 'Deploying...';
+        el.innerHTML = '<p class="text-sm text-gray-400 flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span> Building and deploying server...</p>';
+        if (keyMode === 'paste') await savePastedKey();
+        await saveForm();
+        try {
+            const res = await fetch('/apps/' + APP_ID + '/deploy', { method: 'POST' });
+            const data = await res.json();
+            btn.disabled = false;
+            btn.innerHTML = 'Deploy &amp; Start Server';
+            if (data.ok) {
+                el.innerHTML = '<p class="text-sm text-emerald-400 flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-emerald-400"></span> Server deployed and running</p>';
+                if (data.data?.url) {
+                    document.getElementById('backend_url').value = data.data.url;
+                    backendUrl = data.data.url;
+                }
+                if (data.data?.deploy_key) {
+                    deployKey = data.data.deploy_key;
+                    backendVerified = false;
+                    updateNavButtons();
+                }
+                if (data.data?.admin_key) {
+                    adminKey = data.data.admin_key;
+                }
+            } else {
+                el.innerHTML = '<p class="text-sm text-red-400 flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-red-400"></span> ' + esc(data.error) + '</p>';
+            }
+        } catch (err) {
+            btn.disabled = false;
+            btn.innerHTML = 'Deploy &amp; Start Server';
+            el.innerHTML = '<p class="text-sm text-red-400">' + esc(err.message) + '</p>';
+        }
+    }
+
+    // File upload with progress
+    const filesDropZone = document.getElementById('filesDropZone');
+    const filesInput = document.getElementById('filesInput');
+
+    filesDropZone.addEventListener('click', () => filesInput.click());
+    filesDropZone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        filesDropZone.classList.add('border-brand-500', 'bg-brand-500/5');
+    });
+    filesDropZone.addEventListener('dragleave', () => {
+        filesDropZone.classList.remove('border-brand-500', 'bg-brand-500/5');
+    });
+    filesDropZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        filesDropZone.classList.remove('border-brand-500', 'bg-brand-500/5');
+        if (e.dataTransfer.files.length) handleFileUpload(e.dataTransfer.files[0]);
+    });
+    filesInput.addEventListener('change', (e) => {
+        if (e.target.files.length) handleFileUpload(e.target.files[0]);
+    });
+
+    let uploadInProgress = false;
+
+    function getServerUrl() {
+        return document.getElementById('backend_url').value || backendUrl;
+    }
+
+    async function handleFileUpload(file) {
+        const ext = file.name.split('.').pop().toLowerCase();
+        if (ext !== 'zip') {
+            document.getElementById('uploadStatus').innerHTML = '<p class="text-sm text-red-400">Only .zip files are supported.</p>';
+            return;
+        }
+
+        const serverUrl = getServerUrl();
+        if (!serverUrl) {
+            document.getElementById('uploadStatus').innerHTML = '<p class="text-sm text-red-400">No backend URL configured. Deploy the server first.</p>';
+            return;
+        }
+
+        // Get admin key if we don't have it
+        if (!adminKey && APP_ID) {
+            try {
+                const keyRes = await fetch('/apps/' + APP_ID + '/admin-key');
+                const keyData = await keyRes.json();
+                if (keyData.ok) {
+                    adminKey = keyData.data.admin_key;
+                    if (keyData.data.backend_url) backendUrl = keyData.data.backend_url;
+                }
+            } catch (_) {}
+        }
+        if (!adminKey) {
+            document.getElementById('uploadStatus').innerHTML = '<p class="text-sm text-red-400">No admin key available. Deploy the server first.</p>';
+            return;
+        }
+
+        const progressDiv = document.getElementById('uploadProgress');
+        const bar = document.getElementById('uploadBar');
+        const percentEl = document.getElementById('uploadPercent');
+        const speedEl = document.getElementById('uploadSpeed');
+        const statusEl = document.getElementById('uploadStatus');
+        const fileNameEl = document.getElementById('uploadFileName');
+        const banner = document.getElementById('uploadBanner');
+        const bannerBar = document.getElementById('bannerBar');
+        const bannerTitle = document.getElementById('bannerTitle');
+        const bannerDetail = document.getElementById('bannerDetail');
+        const bannerDismiss = document.getElementById('bannerDismiss');
+
+        const authHeader = 'Basic ' + btoa('admin:' + adminKey);
+
+        // Check disk space on the remote fileserver
+        statusEl.innerHTML = '<p class="text-sm text-gray-400">Checking server disk space at ' + esc(serverUrl) + '...</p>';
+        try {
+            const spaceCtrl = new AbortController();
+            const spaceTimeout = setTimeout(() => spaceCtrl.abort(), 15000);
+            const spaceRes = await fetch(serverUrl + '/admin/check-space?need=' + file.size, {
+                headers: { 'Authorization': authHeader },
+                signal: spaceCtrl.signal,
+                mode: 'cors'
+            });
+            clearTimeout(spaceTimeout);
+            const spaceData = await spaceRes.json();
+            if (!spaceData.ok || !spaceData.enough) {
+                const avail = spaceData.available ? formatBytes(spaceData.available) : 'unknown';
+                const req = spaceData.required ? formatBytes(spaceData.required) : 'unknown';
+                statusEl.innerHTML = '<p class="text-sm text-red-400">Not enough disk space on server. Available: ' + avail + ', Required: ~' + req + '</p>';
+                return;
+            }
+        } catch (err) {
+            const msg = err.name === 'AbortError'
+                ? 'Request timed out — make sure port ' + serverUrl.split(':').pop()?.replace(/\D/g,'') + ' is open on the server and the fileserver is running.'
+                : err.message;
+            statusEl.innerHTML = '<p class="text-sm text-red-400">Could not reach server (' + esc(serverUrl) + '): ' + esc(msg) + '</p>';
+            return;
+        }
+
+        uploadInProgress = true;
+        statusEl.innerHTML = '';
+
+        // Show inline progress (visible on step 2)
+        progressDiv.classList.remove('hidden');
+        bar.style.width = '0%';
+        bar.className = bar.className.replace('bg-emerald-500', 'bg-brand-500').replace('bg-red-500', 'bg-brand-500');
+        percentEl.textContent = '0%';
+        fileNameEl.textContent = file.name + ' (' + formatBytes(file.size) + ')';
+        speedEl.textContent = '';
+
+        // Show persistent banner
+        banner.classList.remove('hidden');
+        bannerBar.style.width = '0%';
+        bannerBar.className = bannerBar.className.replace('bg-emerald-500', 'bg-brand-500').replace('bg-red-500', 'bg-brand-500');
+        bannerTitle.textContent = 'Uploading ' + file.name + ' to server';
+        bannerDetail.textContent = '0%';
+        bannerDismiss.style.display = 'none';
+
+        const formData = new FormData();
+        formData.append('file', file);
+
+        const xhr = new XMLHttpRequest();
+        const startTime = Date.now();
+
+        xhr.upload.addEventListener('progress', (e) => {
+            if (e.lengthComputable) {
+                const pct = Math.round((e.loaded / e.total) * 100);
+                bar.style.width = pct + '%';
+                percentEl.textContent = pct + '%';
+                bannerBar.style.width = pct + '%';
+                const elapsed = (Date.now() - startTime) / 1000;
+                if (elapsed > 0.5) {
+                    const speed = e.loaded / elapsed;
+                    const remaining = (e.total - e.loaded) / speed;
+                    const speedStr = formatBytes(Math.round(speed)) + '/s — ' +
+                        (remaining < 60 ? Math.round(remaining) + 's remaining' : Math.round(remaining / 60) + 'min remaining');
+                    speedEl.textContent = speedStr;
+                    bannerDetail.textContent = pct + '% · ' + speedStr;
+                }
+            }
+        });
+
+        xhr.addEventListener('load', () => {
+            try {
+                const data = JSON.parse(xhr.responseText);
+                if (data.ok) {
+                    uploadInProgress = false;
+                    bar.style.width = '100%';
+                    bar.className = bar.className.replace('bg-brand-500', 'bg-emerald-500');
+                    percentEl.textContent = '100%';
+                    speedEl.textContent = '';
+                    bannerBar.style.width = '100%';
+                    bannerBar.className = bannerBar.className.replace('bg-brand-500', 'bg-emerald-500');
+                    bannerTitle.textContent = 'Upload complete';
+                    bannerDetail.textContent = data.files + ' files extracted (' + formatBytes(data.totalSize) + ')';
+                    bannerDismiss.style.display = '';
+                    statusEl.innerHTML = '<p class="text-sm text-emerald-400 flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-emerald-400"></span> ' +
+                        data.files + ' files extracted (' + formatBytes(data.totalSize) + ')</p>';
+                    loadFilesList();
+                    setTimeout(() => { if (!uploadInProgress) banner.classList.add('hidden'); }, 5000);
+                } else {
+                    uploadInProgress = false;
+                    bar.className = bar.className.replace('bg-brand-500', 'bg-red-500');
+                    bannerBar.className = bannerBar.className.replace('bg-brand-500', 'bg-red-500');
+                    bannerTitle.textContent = 'Upload failed';
+                    bannerDetail.textContent = data.error || 'Unknown error';
+                    bannerDismiss.style.display = '';
+                    statusEl.innerHTML = '<p class="text-sm text-red-400">' + esc(data.error) + '</p>';
+                }
+            } catch (e) {
+                uploadInProgress = false;
+                bannerTitle.textContent = 'Upload failed';
+                bannerDetail.textContent = 'Invalid response';
+                bannerDismiss.style.display = '';
+                statusEl.innerHTML = '<p class="text-sm text-red-400">Upload failed: invalid response</p>';
+            }
+        });
+
+        xhr.addEventListener('error', () => {
+            uploadInProgress = false;
+            bar.className = bar.className.replace('bg-brand-500', 'bg-red-500');
+            bannerBar.className = bannerBar.className.replace('bg-brand-500', 'bg-red-500');
+            bannerTitle.textContent = 'Upload failed';
+            bannerDetail.textContent = 'Network error';
+            bannerDismiss.style.display = '';
+            statusEl.innerHTML = '<p class="text-sm text-red-400">Upload failed: network error</p>';
+        });
+
+        // Upload directly to the fileserver
+        xhr.open('POST', serverUrl + '/admin/upload');
+        xhr.setRequestHeader('Authorization', authHeader);
+        xhr.send(formData);
+    }
+
+    function dismissBanner() {
+        document.getElementById('uploadBanner').classList.add('hidden');
+    }
+
+    async function loadFilesList() {
+        const serverUrl = getServerUrl();
+        if (!serverUrl) return;
+        try {
+            const res = await fetch(serverUrl + '/filesmeta');
+            const data = await res.json();
+            const el = document.getElementById('filesList');
+            const files = data.files || [];
+            if (files.length) {
+                const totalSize = files.reduce((sum, f) => sum + (f.size || 0), 0);
+                const fileItems = files.slice(0, 20).map(f =>
+                    '<div class="flex justify-between text-xs py-1 border-b border-gray-800/50">' +
+                    '<span class="text-gray-400 truncate mr-2">' + esc(f.path || f.name || '') + '</span>' +
+                    '<span class="text-gray-600 whitespace-nowrap">' + formatBytes(f.size || 0) + '</span></div>'
+                ).join('');
+                const moreText = files.length > 20 ? '<p class="text-xs text-gray-600 mt-1">...and ' + (files.length - 20) + ' more files</p>' : '';
+                el.innerHTML = '<div class="rounded-xl bg-gray-900 border border-gray-800 p-3">' +
+                    '<p class="text-xs font-medium text-gray-300 mb-2">' + files.length + ' files (' + formatBytes(totalSize) + ')</p>' +
+                    fileItems + moreText + '</div>';
+            } else {
+                el.innerHTML = '';
+            }
+        } catch (_) {}
+    }
+
+    // Load files list on step 2 entry
+    function onServerStepEnter() {
+        loadFilesList();
+    }
+
+    // Verify backend
+    async function verifyBackend() {
+        if (!APP_ID || !deployKey) {
+            document.getElementById('sshStatus').innerHTML = '<p class=\"text-sm text-amber-400 flex items-center gap-2\"><span class=\"w-2 h-2 rounded-full bg-amber-400\"></span> Please deploy the server first.</p>';
+            return;
+        }
+        const btn = document.getElementById('verifyBtn');
+        const el = document.getElementById('sshStatus');
+        btn.disabled = true;
+        btn.textContent = 'Verifying...';
+        try {
+            const form = new FormData();
+            form.set('deploy_key', deployKey);
+            const res = await fetch('/apps/' + APP_ID + '/verify-backend', { method: 'POST', body: form });
+            const data = await res.json();
+            btn.disabled = false;
+            btn.innerHTML = '<svg class=\"w-4 h-4\" fill=\"none\" stroke=\"currentColor\" viewBox=\"0 0 24 24\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z\"/></svg> Verify &amp; Continue';
+            if (data.ok) {
+                backendVerified = true;
+                el.innerHTML = '<p class=\"text-sm text-emerald-400 flex items-center gap-2\"><span class=\"w-2 h-2 rounded-full bg-emerald-400\"></span> Backend verified successfully</p>';
+                wizardNext();
+            } else {
+                el.innerHTML = '<p class=\"text-sm text-red-400 flex items-center gap-2\"><span class=\"w-2 h-2 rounded-full bg-red-400\"></span> ' + esc(data.error) + '</p>';
+            }
+        } catch (err) {
+            btn.disabled = false;
+            btn.innerHTML = '<svg class=\"w-4 h-4\" fill=\"none\" stroke=\"currentColor\" viewBox=\"0 0 24 24\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z\"/></svg> Verify &amp; Continue';
+            el.innerHTML = '<p class=\"text-sm text-red-400\">' + esc(err.message) + '</p>';
+        }
+    }
+
+    // Test connection
+    function updateTestUrl() {
+        const port = document.getElementById('server_port').value || '3000';
+        let url = document.getElementById('backend_url').value;
+        if (!url) {
+            const host = document.getElementById('server_host').value || 'yourserver';
+            url = 'http://' + host + ':' + port;
+        }
+        document.getElementById('testUrl').textContent = url;
+    }
+
+    async function testConnection() {
+        await ensureSaved();
+        if (!APP_ID) { document.getElementById('testResult').innerHTML = '<p class="text-sm text-red-400">Could not save the application. Please fill in the required fields.</p>'; return; }
+        const btn = document.getElementById('testBtn');
+        const el = document.getElementById('testResult');
+        btn.disabled = true;
+        btn.textContent = 'Testing...';
+        try {
+            const res = await fetch('/apps/' + APP_ID + '/test', { method: 'POST' });
+            const data = await res.json();
+            btn.disabled = false;
+            btn.textContent = 'Test Connection';
+            if (data.ok) {
+                el.innerHTML = '<div class="mt-4 rounded-xl bg-emerald-900/20 border border-emerald-700/50 p-4 text-left"><p class="text-sm text-emerald-400 font-medium">Connection successful!</p>' +
+                    (data.data?.hash ? '<p class="text-xs text-gray-400 mt-1 font-mono">Hash: ' + esc(data.data.hash) + '</p>' : '') +
+                    '</div>';
+            } else {
+                el.innerHTML = '<div class="mt-4 rounded-xl bg-red-900/20 border border-red-700/50 p-4 text-left"><p class="text-sm text-red-400">' + esc(data.error) + '</p></div>';
+            }
+        } catch (err) {
+            btn.disabled = false;
+            btn.textContent = 'Test Connection';
+            el.innerHTML = '<div class="mt-4 rounded-xl bg-red-900/20 border border-red-700/50 p-4 text-left"><p class="text-sm text-red-400">' + esc(err.message) + '</p></div>';
+        }
+    }
+
+    // Build
+    async function startBuild() {
+        await ensureSaved();
+        if (!APP_ID) return;
+        const platforms = [...document.querySelectorAll('input[name="platform"]:checked')].map(c => c.value);
+        if (!platforms.length) { alert('Select at least one platform'); return; }
+
+        const btn = document.getElementById('buildBtn');
+        const output = document.getElementById('buildOutput');
+        const logEl = document.getElementById('buildLog');
+        const filesEl = document.getElementById('buildFiles');
+        btn.disabled = true;
+        btn.textContent = 'Building...';
+        output.classList.remove('hidden');
+        logEl.textContent = 'Starting build...\n';
+        filesEl.innerHTML = '';
+
+        try {
+            const form = new FormData();
+            form.set('platforms', platforms.join(','));
+            await fetch('/apps/' + APP_ID + '/build', { method: 'POST', body: form });
+            pollBuild();
+        } catch (err) {
+            btn.disabled = false;
+            btn.textContent = 'Build';
+            logEl.textContent += 'Error: ' + err.message + '\n';
+        }
+    }
+
+    function pollBuild() {
+        fetch('/apps/' + APP_ID + '/build/status')
+            .then(r => r.json())
+            .then(data => {
+                document.getElementById('buildLog').textContent = data.log || '';
+                document.getElementById('buildLog').scrollTop = 99999;
+                if (data.done) {
+                    const btn = document.getElementById('buildBtn');
+                    btn.disabled = false;
+                    btn.textContent = 'Build';
+                    if (data.error) {
+                        document.getElementById('buildLog').textContent += '\nError: ' + data.error;
+                    }
+                    if (data.files && data.files.length) {
+                        document.getElementById('buildFiles').innerHTML = data.files.map(f =>
+                            '<a href="/apps/' + APP_ID + '/build/download/' + encodeURIComponent(f.name) + '" class="flex items-center justify-between p-3 rounded-xl bg-gray-800/50 hover:bg-gray-800 transition">' +
+                            '<span class="text-sm font-medium">' + esc(f.name) + '</span>' +
+                            '<span class="text-xs text-gray-500">' + formatBytes(f.size) + '</span></a>'
+                        ).join('');
+                    }
+                } else {
+                    setTimeout(pollBuild, 2000);
+                }
+            });
+    }
+
+    // Save form via fetch (to persist data before API calls)
+    // (handled by ensureSaved() above)
+
+    function populateReview() {
+        const v = id => (document.getElementById(id)?.value || '').trim();
+        const rows = [
+            ['Name', v('name') || '—'],
+            ['Display Name', v('display_name') || v('name') || '—'],
+            ['Window Title', v('title') || '—'],
+            ['Version', v('version') || '1.0.0'],
+            ['Output Binary', v('output_name') || '—'],
+            ['Palette', (document.querySelector('input[name="color_palette"]:checked')?.value || 'blue')],
+            ['SSH Host', v('server_host') || '—'],
+            ['SSH User', v('server_user') || '—'],
+            ['Backend URL', v('backend_url') || '—'],
+        ];
+        document.getElementById('reviewSummary').innerHTML = rows.map(([l, val]) =>
+            '<div class="flex justify-between py-2 border-b border-gray-800/50 text-sm">' +
+            '<span class="text-gray-500">' + l + '</span>' +
+            '<span class="text-gray-200">' + esc(val) + '</span></div>'
+        ).join('');
+    }
+
+    function esc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+    function formatBytes(b) {
+        if (b < 1024) return b + ' B';
+        if (b < 1048576) return (b / 1024).toFixed(1) + ' KB';
+        return (b / 1048576).toFixed(1) + ' MB';
+    }
+
+    const PREVIEW_PALETTES = {
+        neutral: { background: 'linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%)', title: '#374151', subtitle: '#6b7280', button: '#6b7280', cardBg: '#ffffff', progressBg: '#e5e7eb', success: '#059669' },
+        blue:    { background: 'linear-gradient(135deg, #ebf8ff 0%, #bee3f8 100%)', title: '#2a4365', subtitle: '#4c51bf', button: '#3182ce', cardBg: '#ffffff', progressBg: '#e6fffa', success: '#38a169' },
+        green:   { background: 'linear-gradient(135deg, #f0fff4 0%, #c6f6d5 100%)', title: '#22543d', subtitle: '#38a169', button: '#38a169', cardBg: '#ffffff', progressBg: '#e6fffa', success: '#38a169' },
+        purple:  { background: 'linear-gradient(135deg, #faf5ff 0%, #e9d8fd 100%)', title: '#322659', subtitle: '#553c9a', button: '#805ad5', cardBg: '#ffffff', progressBg: '#e6fffa', success: '#38a169' }
+    };
+
+    const FALLBACK_LOGO = 'data:image/svg+xml;utf8,' + encodeURIComponent(
+        '<svg xmlns="http://www.w3.org/2000/svg" width="420" height="220" viewBox="0 0 420 220">' +
+        '<defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#1f2937"/><stop offset="100%" stop-color="#374151"/></linearGradient></defs>' +
+        '<rect width="420" height="220" rx="18" fill="url(#g)"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="#e5e7eb" font-size="32" font-family="sans-serif">Your Logo</text>' +
+        '</svg>'
+    );
+
+    function updateBrandingPreview() {
+        const displayName = (document.getElementById('display_name').value || '').trim() || 'PPatcher';
+        const clientDesc = (document.getElementById('client_description').value || '').trim();
+        const executable = (document.getElementById('executable').value || '').trim();
+        const version = (document.getElementById('version').value || '').trim() || '1.0.0';
+        const palette = document.querySelector('input[name="color_palette"]:checked')?.value || 'blue';
+        const colors = PREVIEW_PALETTES[palette] || PREVIEW_PALETTES.blue;
+
+        document.getElementById('previewDisplayName').textContent = displayName;
+        document.getElementById('previewSubtitle').textContent = clientDesc || '\u00A0';
+        document.getElementById('previewVersion').textContent = 'Version ' + version;
+
+        // Show Start button only when executable is set
+        const startBtn = document.getElementById('previewStartBtn');
+        startBtn.style.display = executable ? 'block' : 'none';
+
+        const preview = document.getElementById('clientPreview');
+        preview.style.background = colors.background;
+        document.getElementById('previewDisplayName').style.color = colors.title;
+        document.getElementById('previewSubtitle').style.color = colors.subtitle;
+        document.getElementById('previewVersion').style.color = colors.subtitle;
+        document.getElementById('previewStatus').style.color = colors.subtitle;
+        document.getElementById('previewLogoCard').style.backgroundColor = colors.cardBg;
+        document.getElementById('previewProgressTrack').style.backgroundColor = colors.progressBg;
+        document.getElementById('previewProgress').style.backgroundColor = colors.button;
+        startBtn.style.backgroundColor = colors.button;
+        document.getElementById('previewUpdateBtn').style.backgroundColor = colors.button;
+    }
+
+    function wireBrandUpload(kind) {
+        const zone = document.getElementById(kind + 'DropZone');
+        const input = document.getElementById(kind + 'FileInput');
+        const status = document.getElementById(kind + 'UploadStatus');
+        const label = document.getElementById(kind + 'DropLabel');
+
+        if (!zone || !input) return;
+
+        zone.addEventListener('click', () => input.click());
+        zone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            zone.classList.add('border-brand-500', 'bg-brand-500/5');
+        });
+        zone.addEventListener('dragleave', () => {
+            zone.classList.remove('border-brand-500', 'bg-brand-500/5');
+        });
+        zone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            zone.classList.remove('border-brand-500', 'bg-brand-500/5');
+            if (e.dataTransfer.files.length) uploadBrandAsset(kind, e.dataTransfer.files[0], status, label);
+        });
+
+        input.addEventListener('change', (e) => {
+            if (e.target.files.length) uploadBrandAsset(kind, e.target.files[0], status, label);
+        });
+    }
+
+    async function uploadBrandAsset(kind, file, statusEl, labelEl) {
+        if (!file.type.startsWith('image/')) {
+            statusEl.innerHTML = '<p class="text-xs text-red-400">Please upload an image file.</p>';
+            return;
+        }
+
+        await ensureSaved();
+        if (!APP_ID) {
+            statusEl.innerHTML = '<p class="text-xs text-red-400">Save the app details first.</p>';
+            return;
+        }
+
+        statusEl.innerHTML = '<p class="text-xs text-gray-400">Uploading and optimizing...</p>';
+        const formData = new FormData();
+        formData.append('file', file);
+
+        try {
+            const res = await fetch('/apps/' + APP_ID + '/assets/' + kind, { method: 'POST', body: formData });
+            const data = await res.json();
+            if (!data.ok) {
+                statusEl.innerHTML = '<p class="text-xs text-red-400">' + esc(data.error || 'Upload failed') + '</p>';
+                return;
+            }
+
+            const finalURL = data.data?.url || '';
+            const finalSize = data.data?.size || 0;
+            if (finalURL) {
+                if (kind === 'logo') {
+                    document.getElementById('previewLogo').src = finalURL;
+                }
+            }
+            labelEl.textContent = file.name + ' ✔';
+            statusEl.innerHTML = '<p class="text-xs text-emerald-400">Saved at ' + formatBytes(finalSize) + ' (auto-shrunk if needed)</p>';
+        } catch (err) {
+            statusEl.innerHTML = '<p class="text-xs text-red-400">' + esc(err.message) + '</p>';
+        }
+    }
+
+    // Init
+    setKeyMode('path');
+    const previewLogoEl = document.getElementById('previewLogo');
+    const logoSrc = (previewLogoEl.getAttribute('src') || '').trim();
+    if (!logoSrc) previewLogoEl.src = FALLBACK_LOGO;
+    wireBrandUpload('logo');
+    wireBrandUpload('icon');
+    ['display_name', 'version', 'description', 'client_description', 'executable'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.addEventListener('input', updateBrandingPreview);
+    });
+    document.querySelectorAll('input[name="color_palette"]').forEach(el => el.addEventListener('change', updateBrandingPreview));
+    updateBrandingPreview();
+    </script>
+
+</body>
+</html>
+{{end}}

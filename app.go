@@ -69,6 +69,10 @@ func (a *App) tryUpdating() (err error) {
 		}
 		return err
 	}
+
+	// Fetch the current version from the server and update config if it changed.
+	a.fetchRemoteVersion()
+
 	if ShouldUpdate {
 		a.UpdateDownloadStatus("downloading")
 		if BuildConfig.Mode != "production" {
@@ -80,6 +84,33 @@ func (a *App) tryUpdating() (err error) {
 	a.UpdateDownloadStatus("alreadyReady")
 
 	return nil
+}
+
+// fetchRemoteVersion queries {backend}/version and, if the version differs from
+// the baked-in config, updates BuildConfig.Version and emits a "versionUpdate" event.
+func (a *App) fetchRemoteVersion() {
+	resp, err := http.Get(BuildConfig.Backend + "/version")
+	if err != nil {
+		return
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		return
+	}
+	var payload struct {
+		Version string `json:"version"`
+	}
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return
+	}
+	if err := json.Unmarshal(body, &payload); err != nil || payload.Version == "" {
+		return
+	}
+	if payload.Version != BuildConfig.Version {
+		BuildConfig.Version = payload.Version
+		runtime.EventsEmit(a.ctx, "versionUpdate", payload.Version)
+	}
 }
 
 type MetaData struct {
@@ -104,6 +135,13 @@ var (
 		},
 	}
 )
+
+// getBackendURLs returns the primary backend followed by any fallback URLs.
+func getBackendURLs() []string {
+	urls := []string{BuildConfig.Backend}
+	urls = append(urls, BuildConfig.FallbackURLs...)
+	return urls
+}
 
 func calculateFilesMeta() ([]MetaForFile, int64, error) {
 	var filesMeta []MetaForFile

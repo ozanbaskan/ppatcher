@@ -47,6 +47,14 @@ help:
 ## Install required dependencies
 install-deps:
 	@echo -e "$(BLUE)Installing dependencies...$(NC)"
+	@if [ "$$(uname -s)" = "Linux" ]; then \
+		if ! pkg-config --exists gtk+-3.0 2>/dev/null || \
+		   (! pkg-config --exists webkit2gtk-4.1 2>/dev/null && ! pkg-config --exists webkit2gtk-4.0 2>/dev/null); then \
+			echo "Installing Linux system libraries..."; \
+			sudo apt install -y libgtk-3-dev libwebkit2gtk-4.1-dev pkg-config || \
+				echo "Could not install system libraries automatically. Please install libgtk-3-dev, libwebkit2gtk-4.1-dev, and pkg-config manually."; \
+		fi; \
+	fi
 	@if ! command -v wails >/dev/null 2>&1; then \
 		echo "Installing Wails CLI..."; \
 		go install github.com/wailsapp/wails/v2/cmd/wails@latest; \
@@ -60,20 +68,33 @@ install-deps:
 ## Check if all dependencies are available
 check-deps:
 	@echo -e "$(BLUE)Checking dependencies...$(NC)"
-	@if ! command -v wails >/dev/null 2>&1; then \
-		echo -e "$(RED)❌ Wails CLI not found!$(NC)"; \
-		echo "Install with: go install github.com/wailsapp/wails/v2/cmd/wails@latest"; \
-		exit 1; \
-	fi
 	@if ! command -v go >/dev/null 2>&1; then \
 		echo -e "$(RED)❌ Go not found!$(NC)"; \
 		echo "Install from: https://golang.org/dl/"; \
+		exit 1; \
+	fi
+	@if ! command -v wails >/dev/null 2>&1; then \
+		echo -e "$(RED)❌ Wails CLI not found!$(NC)"; \
+		echo "Install with: go install github.com/wailsapp/wails/v2/cmd/wails@latest"; \
+		echo "Make sure \$$(go env GOPATH)/bin is in your PATH"; \
 		exit 1; \
 	fi
 	@if ! command -v npm >/dev/null 2>&1; then \
 		echo -e "$(RED)❌ npm not found!$(NC)"; \
 		echo "Install Node.js from: https://nodejs.org/"; \
 		exit 1; \
+	fi
+	@if [ "$$(uname -s)" = "Linux" ]; then \
+		if ! pkg-config --exists gtk+-3.0 2>/dev/null; then \
+			echo -e "$(RED)❌ libgtk-3-dev not found!$(NC)"; \
+			echo "Install with: sudo apt install -y libgtk-3-dev"; \
+			exit 1; \
+		fi; \
+		if ! pkg-config --exists webkit2gtk-4.1 2>/dev/null && ! pkg-config --exists webkit2gtk-4.0 2>/dev/null; then \
+			echo -e "$(RED)❌ libwebkit2gtk not found!$(NC)"; \
+			echo "Install with: sudo apt install -y libwebkit2gtk-4.1-dev"; \
+			exit 1; \
+		fi; \
 	fi
 	@echo -e "$(GREEN)✅ All dependencies are available$(NC)"
 
@@ -146,7 +167,13 @@ dev-frontend:
 ## Run wails in development mode
 dev: install-deps
 	@echo -e "$(BLUE)Starting Wails development server...$(NC)"
-	@wails dev
+	@WAILS_TAGS=""; \
+	if [ "$$(uname -s)" = "Linux" ] && pkg-config --exists webkit2gtk-4.1 2>/dev/null; then \
+		WAILS_TAGS="-tags webkit2_41"; \
+		echo "Detected webkit2gtk-4.1, using webkit2_41 build tag"; \
+	fi; \
+	env -u GTK_PATH -u GTK_EXE_PREFIX -u LOCPATH -u GTK_IM_MODULE_FILE -u GSETTINGS_SCHEMA_DIR -u GIO_MODULE_DIR \
+		wails dev $$WAILS_TAGS
 
 ## Run tests (if any)
 test:

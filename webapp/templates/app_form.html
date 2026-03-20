@@ -872,14 +872,13 @@
         const authHeader = 'Basic ' + btoa('admin:' + adminKey);
 
         // Check disk space on the remote fileserver
-        statusEl.innerHTML = '<p class="text-sm text-gray-400">Checking server disk space at ' + esc(serverUrl) + '...</p>';
+        statusEl.innerHTML = '<p class="text-sm text-gray-400">Checking server disk space...</p>';
         try {
             const spaceCtrl = new AbortController();
             const spaceTimeout = setTimeout(() => spaceCtrl.abort(), 15000);
-            const spaceRes = await fetch(serverUrl + '/admin/check-space?need=' + file.size, {
+            const spaceRes = await fetch('/apps/' + APP_ID + '/fs/admin/check-space?need=' + file.size, {
                 headers: { 'Authorization': authHeader },
-                signal: spaceCtrl.signal,
-                mode: 'cors'
+                signal: spaceCtrl.signal
             });
             clearTimeout(spaceTimeout);
             const spaceData = await spaceRes.json();
@@ -891,9 +890,9 @@
             }
         } catch (err) {
             const msg = err.name === 'AbortError'
-                ? 'Request timed out — make sure port ' + serverUrl.split(':').pop()?.replace(/\D/g,'') + ' is open on the server and the fileserver is running.'
+                ? 'Request timed out — make sure the fileserver is running on the remote host.'
                 : err.message;
-            statusEl.innerHTML = '<p class="text-sm text-red-400">Could not reach server (' + esc(serverUrl) + '): ' + esc(msg) + '</p>';
+            statusEl.innerHTML = '<p class="text-sm text-red-400">Could not reach server: ' + esc(msg) + '</p>';
             return;
         }
 
@@ -928,6 +927,7 @@
                 bar.style.width = pct + '%';
                 percentEl.textContent = pct + '%';
                 bannerBar.style.width = pct + '%';
+                bannerDetail.textContent = pct + '%';
                 const elapsed = (Date.now() - startTime) / 1000;
                 if (elapsed > 0.5) {
                     const speed = e.loaded / elapsed;
@@ -936,6 +936,11 @@
                         (remaining < 60 ? Math.round(remaining) + 's remaining' : Math.round(remaining / 60) + 'min remaining');
                     speedEl.textContent = speedStr;
                     bannerDetail.textContent = pct + '% · ' + speedStr;
+                }
+                if (pct >= 100) {
+                    bannerTitle.textContent = 'Processing on server...';
+                    bannerDetail.textContent = 'Extracting files — please wait';
+                    speedEl.textContent = 'Processing on server...';
                 }
             }
         });
@@ -986,8 +991,8 @@
             statusEl.innerHTML = '<p class="text-sm text-red-400">Upload failed: network error</p>';
         });
 
-        // Upload directly to the fileserver
-        xhr.open('POST', serverUrl + '/admin/upload');
+        // Upload through server-side proxy
+        xhr.open('POST', '/apps/' + APP_ID + '/fs/admin/upload');
         xhr.setRequestHeader('Authorization', authHeader);
         xhr.send(formData);
     }
@@ -1000,7 +1005,7 @@
         const serverUrl = getServerUrl();
         if (!serverUrl) return;
         try {
-            const res = await fetch(serverUrl + '/filesmeta');
+            const res = await fetch('/apps/' + APP_ID + '/fs/filesmeta');
             const data = await res.json();
             const el = document.getElementById('filesList');
             const files = data.files || [];

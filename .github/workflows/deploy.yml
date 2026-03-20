@@ -1,51 +1,51 @@
-name: Deploy to Production
+# name: Deploy to Production
 
-on:
-  push:
-    branches:
-      - main
+# on:
+#   push:
+#     branches:
+#       - main
 
-jobs:
-  deploy:
-    name: Deploy to Oracle VPS
-    runs-on: ubuntu-latest
+# jobs:
+#   deploy:
+#     name: Deploy to Oracle VPS
+#     runs-on: ubuntu-latest
 
-    steps:
-      - name: Deploy via SSH
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.DEPLOY_HOST }}
-          username: ${{ secrets.DEPLOY_USER }}
-          key: ${{ secrets.DEPLOY_SSH_KEY }}
-          port: 22
-          envs: DEPLOY_REPO
-          script: |
-            set -e
+#     steps:
+#       - name: Deploy via SSH
+#         uses: appleboy/ssh-action@v1.0.3
+#         with:
+#           host: ${{ secrets.DEPLOY_HOST }}
+#           username: ${{ secrets.DEPLOY_USER }}
+#           key: ${{ secrets.DEPLOY_SSH_KEY }}
+#           port: 22
+#           envs: DEPLOY_REPO
+#           script: |
+#             set -e
 
-            APP_DIR="/opt/ppatcher"
-            REPO="https://github.com/ozanbaskan/ppatcher.git"
+#             APP_DIR="/opt/ppatcher"
+#             REPO="https://github.com/ozanbaskan/ppatcher.git"
 
-            if [ ! -d "$APP_DIR/.git" ]; then
-              echo "First deploy: cloning repo..."
-              sudo mkdir -p "$APP_DIR"
-              sudo chown "$USER":"$USER" "$APP_DIR"
-              git clone "$REPO" "$APP_DIR"
-              echo "Repo cloned. Creating .env.prod from example..."
-              cp "$APP_DIR/webapp/.env.prod.example" "$APP_DIR/webapp/.env.prod"
-              echo ""
-              echo "⚠️  First-time setup: edit $APP_DIR/webapp/.env.prod with real secrets, then re-run the workflow or redeploy manually."
-              exit 0
-            fi
+#             if [ ! -d "$APP_DIR/.git" ]; then
+#               echo "First deploy: cloning repo..."
+#               sudo mkdir -p "$APP_DIR"
+#               sudo chown "$USER":"$USER" "$APP_DIR"
+#               git clone "$REPO" "$APP_DIR"
+#               echo "Repo cloned. Creating .env.prod from example..."
+#               cp "$APP_DIR/webapp/.env.prod.example" "$APP_DIR/webapp/.env.prod"
+#               echo ""
+#               echo "⚠️  First-time setup: edit $APP_DIR/webapp/.env.prod with real secrets, then re-run the workflow or redeploy manually."
+#               exit 0
+#             fi
 
-            cd "$APP_DIR"
+#             cd "$APP_DIR"
 
-            echo "Pulling latest code..."
-            git pull origin main
+#             echo "Pulling latest code..."
+#             git pull origin main
 
-            echo "Rebuilding and restarting webapp..."
-            docker compose -f docker-compose.prod.yml up --build -d webapp
+#             echo "Rebuilding and restarting webapp..."
+#             docker compose -f docker-compose.prod.yml up --build -d webapp
 
-            echo "Cleaning up old images..."
-            docker image prune -f
+#             echo "Cleaning up old images..."
+#             docker image prune -f
 
-            echo "Deploy complete."
+#             echo "Deploy complete."

@@ -1,7 +1,9 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
+	"io"
 	"log"
 	"net/http"
 	"strings"
@@ -403,4 +405,60 @@ func renderTemplate(w http.ResponseWriter, name string, data interface{}) {
 		log.Printf("Template render error (%s): %v", name, err)
 		http.Error(w, "Internal error", http.StatusInternalServerError)
 	}
+}
+
+// ---------- File Server Proxy ----------
+
+func handleFSProxy(w http.ResponseWriter, r *http.Request) {
+	user := currentUser(r)
+	app, err := getAppForUser(r, user.ID)
+	if err != nil {
+		http.NotFound(w, r)
+		return
+	}
+	if app.BackendURL == "" {
+		writeJSON(w, 400, apiResponse{Error: "No backend URL configured"})
+		return
+	}
+
+	vars := mux.Vars(r)
+	fsPath := vars["path"]
+
+	targetURL := strings.TrimRight(app.BackendURL, "/") + "/" + fsPath
+	if r.URL.RawQuery != "" {
+		targetURL += "?" + r.URL.RawQuery
+	}
+
+	ctx, cancel := context.WithTimeout(r.Context(), 5*time.Minute)
+	defer cancel()
+
+	proxyReq, err := http.NewRequestWithContext(ctx, r.Method, targetURL, r.Body)
+	if err != nil {
+		writeJSON(w, 500, apiResponse{Error: "Failed to create proxy request"})
+		return
+	}
+
+	// Forward relevant headers
+	for _, h := range []string{"Authorization", "Content-Type", "Content-Length"} {
+		if v := r.Header.Get(h); v != "" {
+			proxyReq.Header.Set(h, v)
+		}
+	}
+
+	resp, err := http.DefaultClient.Do(proxyReq)
+	if err != nil {
+		writeJSON(w, 502, apiResponse{Error: "Could not reach file server: " + err.Error()})
+		return
+	}
+	defer resp.Body.Close()
+
+	// Copy response headers
+	for _, h := range []string{"Content-Type", "Content-Length", "Content-Disposition"} {
+		if v := resp.Header.Get(h); v != "" {
+			w.Header().Set(h, v)
+		}
+	}
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.WriteHeader(resp.StatusCode)
+	io.Copy(w, resp.Body)
 }

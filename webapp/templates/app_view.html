@@ -316,17 +316,16 @@
                 document.getElementById('versionText').textContent = version;
                 cancelVersion();
                 // Push new version to the live file server so running clients pick it up.
-                if (backendUrl) {
+                    if (backendUrl) {
                     const key = await getAdminKey();
                     if (key) {
-                        fetch(backendUrl + '/admin/version', {
+                        fetch('/apps/' + APP_ID + '/fs/admin/version', {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json',
                                 'Authorization': 'Basic ' + btoa('admin:' + key)
                             },
-                            body: JSON.stringify({ version: version }),
-                            mode: 'cors'
+                            body: JSON.stringify({ version: version })
                         }).catch(() => {});
                     }
                 }
@@ -407,10 +406,9 @@
         try {
             const spaceCtrl = new AbortController();
             const spaceTimeout = setTimeout(() => spaceCtrl.abort(), 15000);
-            const spaceRes = await fetch(backendUrl + '/admin/check-space?need=' + file.size, {
+            const spaceRes = await fetch('/apps/' + APP_ID + '/fs/admin/check-space?need=' + file.size, {
                 headers: { 'Authorization': authHeader },
-                signal: spaceCtrl.signal,
-                mode: 'cors'
+                signal: spaceCtrl.signal
             });
             clearTimeout(spaceTimeout);
             const spaceData = await spaceRes.json();
@@ -456,6 +454,9 @@
                     speedEl.textContent = formatBytes(Math.round(speed)) + '/s — ' +
                         (remaining < 60 ? Math.round(remaining) + 's remaining' : Math.round(remaining / 60) + 'min remaining');
                 }
+                if (pct >= 100) {
+                    speedEl.textContent = 'Processing on server...';
+                }
             }
         });
 
@@ -483,7 +484,7 @@
             statusEl.innerHTML = '<p class="text-sm text-red-400">Upload failed: network error</p>';
         });
 
-        xhr.open('POST', backendUrl + '/admin/upload');
+        xhr.open('POST', '/apps/' + APP_ID + '/fs/admin/upload');
         xhr.setRequestHeader('Authorization', authHeader);
         xhr.send(formData);
     }

@@ -118,6 +118,7 @@ func main() {
 	r.HandleFunc("/apps/{id}/admin-key", requireAuth(handleGetAdminKey)).Methods("GET")
 	r.HandleFunc("/apps/{id}/assets/{kind}", requireAuth(handleUploadBrandAsset)).Methods("POST")
 	r.HandleFunc("/apps/{id}/assets/{kind}", requireAuth(handleGetBrandAsset)).Methods("GET")
+	r.HandleFunc("/apps/{id}/fs/{path:.*}", requireAuth(handleFSProxy)).Methods("GET", "POST", "PUT", "DELETE", "OPTIONS")
 	r.HandleFunc("/server-bins/rebuild", requireAuth(handleRebuildServerBins)).Methods("POST")
 
 	// Pre-build server binaries in background on startup

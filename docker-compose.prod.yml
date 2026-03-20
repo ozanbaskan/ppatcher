@@ -2,9 +2,10 @@ services:
   db:
     image: postgres:16-alpine
     restart: unless-stopped
+    env_file:
+      - ./webapp/.env.prod
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-ppatcher}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ppatcher
     volumes:
       - pgdata:/var/lib/postgresql/data

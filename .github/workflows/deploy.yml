@@ -23,7 +23,7 @@ jobs:
             set -e
 
             APP_DIR="/opt/ppatcher"
-            REPO="${{ secrets.DEPLOY_REPO }}"
+            REPO="https://github.com/ozanbaskan/ppatcher.git"
 
             if [ ! -d "$APP_DIR/.git" ]; then
               echo "First deploy: cloning repo..."

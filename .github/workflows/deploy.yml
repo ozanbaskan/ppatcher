@@ -18,10 +18,26 @@ jobs:
           username: ${{ secrets.DEPLOY_USER }}
           key: ${{ secrets.DEPLOY_SSH_KEY }}
           port: 22
+          envs: DEPLOY_REPO
           script: |
             set -e
 
-            cd /opt/ppatcher
+            APP_DIR="/opt/ppatcher"
+            REPO="${{ secrets.DEPLOY_REPO }}"
+
+            if [ ! -d "$APP_DIR/.git" ]; then
+              echo "First deploy: cloning repo..."
+              sudo mkdir -p "$APP_DIR"
+              sudo chown "$USER":"$USER" "$APP_DIR"
+              git clone "$REPO" "$APP_DIR"
+              echo "Repo cloned. Creating .env.prod from example..."
+              cp "$APP_DIR/webapp/.env.prod.example" "$APP_DIR/webapp/.env.prod"
+              echo ""
+              echo "⚠️  First-time setup: edit $APP_DIR/webapp/.env.prod with real secrets, then re-run the workflow or redeploy manually."
+              exit 0
+            fi
+
+            cd "$APP_DIR"
 
             echo "Pulling latest code..."
             git pull origin main
